@@ -33,36 +33,36 @@ export default async function HomePage() {
       </nav>
 
       {/* Hero */}
-      <section className="max-w-4xl mx-auto px-6 py-20 text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
+      <section className="max-w-4xl mx-auto px-6 py-12 md:py-20 text-center">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-5">
           <BookOpen size={14} />
           Story-based medical learning
         </div>
 
-        <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6">
+        <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold leading-tight mb-5">
           Learn NEET PG through{" "}
           <span className="text-primary">compelling stories</span>
         </h1>
 
-        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">
+        <p className="text-base md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">
           Stop memorizing. Start understanding. Master Community Medicine and
           more through immersive medical stories that make concepts unforgettable.
         </p>
 
-        <div className="flex items-center justify-center gap-4">
-          <Button size="lg" asChild className="gap-2">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <Button size="lg" asChild className="gap-2 w-full sm:w-auto">
             <Link href="/register">
               Start learning free <ArrowRight size={16} />
             </Link>
           </Button>
-          <Button size="lg" variant="outline" asChild>
+          <Button size="lg" variant="outline" asChild className="w-full sm:w-auto">
             <Link href="/login">Sign in</Link>
           </Button>
         </div>
       </section>
 
       {/* Features */}
-      <section className="max-w-5xl mx-auto px-6 py-16 grid md:grid-cols-3 gap-6">
+      <section className="max-w-5xl mx-auto px-6 py-8 md:py-16 grid sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
         {[
           {
             icon: BookOpen,

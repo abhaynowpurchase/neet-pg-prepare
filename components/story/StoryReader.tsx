@@ -88,7 +88,7 @@ export function StoryReader({ chapter, chapterId }: Props) {
     >
       {/* Top bar */}
       <div
-        className={`flex items-center justify-between px-4 md:px-8 py-3 border-b z-10 ${
+        className={`flex items-center justify-between px-3 md:px-8 py-2.5 border-b z-10 ${
           isDark
             ? "bg-gray-950 border-gray-800"
             : "bg-[#faf9f7] border-gray-200"
@@ -97,14 +97,14 @@ export function StoryReader({ chapter, chapterId }: Props) {
         <Button
           variant="ghost"
           size="sm"
-          className="gap-2 text-sm"
+          className="gap-1.5 text-sm px-2 md:px-3"
           onClick={() => router.back()}
         >
           <ArrowLeft size={16} />
-          Back
+          <span className="hidden xs:inline">Back</span>
         </Button>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5">
           <Button
             variant="ghost"
             size="icon"
@@ -114,7 +114,7 @@ export function StoryReader({ chapter, chapterId }: Props) {
           >
             <Minus size={14} />
           </Button>
-          <span className="text-xs w-8 text-center">{fontSize}</span>
+          <span className="text-xs w-7 text-center tabular-nums">{fontSize}</span>
           <Button
             variant="ghost"
             size="icon"
@@ -146,7 +146,7 @@ export function StoryReader({ chapter, chapterId }: Props) {
         ref={contentRef}
         className="flex-1 overflow-y-auto"
       >
-        <article className="max-w-2xl mx-auto px-6 md:px-8 py-10 pb-20">
+        <article className="max-w-2xl mx-auto px-4 sm:px-6 md:px-8 py-8 md:py-10 pb-20">
           {/* Chapter header */}
           <div className="mb-8">
             <div className="flex items-center gap-2 text-xs font-medium text-primary mb-3">

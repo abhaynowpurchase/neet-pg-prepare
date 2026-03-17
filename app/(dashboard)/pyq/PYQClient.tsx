@@ -221,7 +221,7 @@ export function PYQClient({ questions, chapters, subjects }: Props) {
             <FileQuestion className="w-5 h-5 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">Previous Year Questions</h1>
+            <h1 className="text-xl sm:text-2xl font-bold">Last Year Question Papers</h1>
             <p className="text-sm text-muted-foreground">
               {questions.length} questions across all subjects
             </p>
@@ -229,12 +229,12 @@ export function PYQClient({ questions, chapters, subjects }: Props) {
         </div>
 
         {/* Stats row */}
-        <div className="flex flex-wrap gap-3 mt-4">
+        <div className="flex flex-wrap gap-2 mt-4">
           {Object.entries(stats).map(([type, count]) => (
             <div
               key={type}
               className={cn(
-                "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold",
+                "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold",
                 examTypeBadgeColor(type)
               )}
             >
@@ -250,7 +250,7 @@ export function PYQClient({ questions, chapters, subjects }: Props) {
           <Filter size={14} />
           Filters
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-4 gap-3">
           {/* Exam type */}
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1 block">Exam Type</label>

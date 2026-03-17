@@ -22,7 +22,7 @@ const navItems = [
   { label: "Subjects", href: "/subjects", icon: BookOpen },
   { label: "High Yield", href: "/high-yield", icon: Star },
   { label: "Progress", href: "/progress", icon: Trophy },
-  { label: "PYQ", href: "/pyq", icon: FileQuestion },
+  { label: "Last Year QP", href: "/pyq", icon: FileQuestion },
 ];
 
 interface Props {

@@ -1,75 +1,48 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import { connectToDatabase } from "@/lib/mongodb";
-import Question from "@/models/Question";
-import Chapter from "@/models/Chapter";
-import Subject from "@/models/Subject";
+"use client";
+
+import { useState, useEffect } from "react";
 import { PYQClient } from "./PYQClient";
 
-type LeanQuestion = {
-  _id: string;
-  chapterId: string;
-  question: string;
-  options: string[];
-  correctAnswer: number;
-  explanation: string;
-  examType: string;
-  year: number;
-  difficulty: string;
+type Question = {
+  _id: string; chapterId: string; question: string; options: string[];
+  correctAnswer: number; explanation: string; examType: string; year: number; difficulty: string;
 };
+type Chapter = { _id: string; title: string; subjectId: string };
+type Subject = { _id: string; name: string };
 
-type LeanChapter = {
-  _id: string;
-  title: string;
-  subjectId: string;
-};
+export default function PYQPage() {
+  const [data, setData] = useState<{ questions: Question[]; chapters: Chapter[]; subjects: Subject[] } | null>(null);
+  const [loading, setLoading] = useState(true);
 
-type LeanSubject = {
-  _id: string;
-  name: string;
-};
+  useEffect(() => {
+    fetch("/api/pyq")
+      .then((r) => r.json())
+      .then(setData)
+      .finally(() => setLoading(false));
+  }, []);
 
-export default async function PYQPage() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) redirect("/login");
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+        <div className="animate-pulse space-y-4">
+          <div className="h-12 bg-muted rounded-lg w-64" />
+          <div className="h-4 bg-muted rounded w-48" />
+          <div className="h-24 bg-muted rounded-xl mt-6" />
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-40 bg-muted rounded-xl" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
-  await connectToDatabase();
-
-  const [rawQuestions, rawChapters, rawSubjects] = await Promise.all([
-    Question.find({}).sort({ year: -1, examType: 1 }).lean(),
-    Chapter.find({}).lean(),
-    Subject.find({}).lean(),
-  ]);
-
-  const questions: LeanQuestion[] = (rawQuestions as unknown as Array<Record<string, unknown>>).map((q) => ({
-    _id: String(q._id),
-    chapterId: String(q.chapterId),
-    question: String(q.question ?? ""),
-    options: Array.isArray(q.options) ? q.options.map(String) : [],
-    correctAnswer: Number(q.correctAnswer ?? 0),
-    explanation: String(q.explanation ?? ""),
-    examType: String(q.examType ?? ""),
-    year: Number(q.year ?? 0),
-    difficulty: String(q.difficulty ?? "medium"),
-  }));
-
-  const chapters: LeanChapter[] = (rawChapters as unknown as Array<Record<string, unknown>>).map((c) => ({
-    _id: String(c._id),
-    title: String(c.title ?? ""),
-    subjectId: String(c.subjectId),
-  }));
-
-  const subjects: LeanSubject[] = (rawSubjects as unknown as Array<Record<string, unknown>>).map((s) => ({
-    _id: String(s._id),
-    name: String(s.name ?? ""),
-  }));
+  if (!data) return null;
 
   return (
     <PYQClient
-      questions={questions}
-      chapters={chapters}
-      subjects={subjects}
+      questions={data.questions}
+      chapters={data.chapters}
+      subjects={data.subjects}
     />
   );
 }

@@ -40,7 +40,7 @@ const navItems = [
     icon: Trophy,
   },
   {
-    label: "PYQ",
+    label: "Last Year QP",
     href: "/pyq",
     icon: FileQuestion,
   },
