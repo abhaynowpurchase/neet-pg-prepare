@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 60 9% 97%;
+    --foreground: 150 10% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 150 10% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 10% 10%;
+    --primary: 142 72% 29%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 214 32% 91%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 60 5% 93%;
+    --muted-foreground: 150 5% 45%;
+    --accent: 214 89% 52%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 150 10% 88%;
+    --input: 150 10% 88%;
+    --ring: 142 72% 29%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 150 15% 8%;
+    --foreground: 60 5% 95%;
+    --card: 150 12% 11%;
+    --card-foreground: 60 5% 95%;
+    --popover: 150 12% 11%;
+    --popover-foreground: 60 5% 95%;
+    --primary: 142 70% 45%;
+    --primary-foreground: 150 15% 8%;
+    --secondary: 150 12% 18%;
+    --secondary-foreground: 60 5% 95%;
+    --muted: 150 12% 16%;
+    --muted-foreground: 150 5% 60%;
+    --accent: 214 89% 60%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 63% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 150 12% 20%;
+    --input: 150 12% 20%;
+    --ring: 142 70% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Story reader typography */
+.story-content {
+  font-family: var(--font-lora), Georgia, serif;
+  line-height: 1.85;
+  font-size: 1.0625rem;
+  color: hsl(var(--foreground));
+}
+
+.story-content p {
+  margin-bottom: 1.5rem;
+}
+
+.story-content h2 {
+  font-size: 1.375rem;
+  font-weight: 700;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  color: hsl(var(--primary));
+}
+
+.story-content h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.story-content blockquote {
+  border-left: 3px solid hsl(var(--primary));
+  padding-left: 1.25rem;
+  font-style: italic;
+  color: hsl(var(--muted-foreground));
+  margin: 1.5rem 0;
+}
+
+.story-content .highlight-box {
+  background: hsl(var(--primary) / 0.08);
+  border: 1px solid hsl(var(--primary) / 0.2);
+  border-radius: 0.5rem;
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.4);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.6);
+}
+
+/* Quiz animations */
+.quiz-option {
+  transition: all 0.2s ease;
+}
+
+.quiz-option:hover:not(:disabled) {
+  transform: translateX(4px);
+}
+
+/* Progress ring */
+@keyframes progress-ring {
+  from { stroke-dashoffset: 100; }
+  to { stroke-dashoffset: var(--progress); }
+}
