@@ -1,15 +1,18 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import {
   BookOpen,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
+  ChevronRight,
   Filter,
   FileQuestion,
   CheckCircle2,
   XCircle,
 } from "lucide-react";
+import { useState } from "react";
 import { cn, formatExamType, examTypeBadgeColor } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,10 +32,24 @@ type Question = {
 type Chapter = { _id: string; title: string; subjectId: string };
 type Subject = { _id: string; name: string };
 
+type Filters = {
+  examType: string;
+  difficulty: string;
+  year: string;
+  subjectId: string;
+};
+
 interface Props {
   questions: Question[];
   chapters: Chapter[];
   subjects: Subject[];
+  total: number;
+  page: number;
+  totalPages: number;
+  loading: boolean;
+  filters: Filters;
+  onFilterChange: (f: Partial<Filters>) => void;
+  onPageChange: (p: number) => void;
 }
 
 const EXAM_TYPES = ["All", "NEET_PG", "INI_CET", "UPSC_CMO"] as const;
@@ -157,12 +174,85 @@ function QuestionCard({
   );
 }
 
-export function PYQClient({ questions, chapters, subjects }: Props) {
-  const [examType, setExamType] = useState<string>("All");
-  const [difficulty, setDifficulty] = useState<string>("All");
-  const [yearFilter, setYearFilter] = useState<string>("All");
-  const [subjectFilter, setSubjectFilter] = useState<string>("All");
+function Pagination({
+  page,
+  totalPages,
+  onPageChange,
+}: {
+  page: number;
+  totalPages: number;
+  onPageChange: (p: number) => void;
+}) {
+  if (totalPages <= 1) return null;
 
+  // Build page numbers with ellipsis
+  const pages: (number | "…")[] = [];
+  if (totalPages <= 7) {
+    for (let i = 1; i <= totalPages; i++) pages.push(i);
+  } else {
+    pages.push(1);
+    if (page > 3) pages.push("…");
+    for (let i = Math.max(2, page - 1); i <= Math.min(totalPages - 1, page + 1); i++) {
+      pages.push(i);
+    }
+    if (page < totalPages - 2) pages.push("…");
+    pages.push(totalPages);
+  }
+
+  return (
+    <div className="flex items-center justify-center gap-1 mt-8">
+      <button
+        onClick={() => onPageChange(page - 1)}
+        disabled={page === 1}
+        className="w-8 h-8 flex items-center justify-center rounded-lg border disabled:opacity-40 hover:bg-muted transition-colors"
+      >
+        <ChevronLeft size={15} />
+      </button>
+
+      {pages.map((p, i) =>
+        p === "…" ? (
+          <span key={`ellipsis-${i}`} className="w-8 h-8 flex items-center justify-center text-sm text-muted-foreground">
+            …
+          </span>
+        ) : (
+          <button
+            key={p}
+            onClick={() => onPageChange(p)}
+            className={cn(
+              "w-8 h-8 flex items-center justify-center rounded-lg border text-sm font-medium transition-colors",
+              p === page
+                ? "bg-primary text-primary-foreground border-primary"
+                : "hover:bg-muted"
+            )}
+          >
+            {p}
+          </button>
+        )
+      )}
+
+      <button
+        onClick={() => onPageChange(page + 1)}
+        disabled={page === totalPages}
+        className="w-8 h-8 flex items-center justify-center rounded-lg border disabled:opacity-40 hover:bg-muted transition-colors"
+      >
+        <ChevronRight size={15} />
+      </button>
+    </div>
+  );
+}
+
+export function PYQClient({
+  questions,
+  chapters,
+  subjects,
+  total,
+  page,
+  totalPages,
+  loading,
+  filters,
+  onFilterChange,
+  onPageChange,
+}: Props) {
   const chapterMap = useMemo(() => {
     const m: Record<string, Chapter> = {};
     chapters.forEach((c) => { m[c._id] = c; });
@@ -175,42 +265,11 @@ export function PYQClient({ questions, chapters, subjects }: Props) {
     return m;
   }, [subjects]);
 
-  const years = useMemo(() => {
-    const set = new Set(questions.map((q) => q.year));
-    return ["All", ...Array.from(set).sort((a, b) => b - a).map(String)];
-  }, [questions]);
-
-  const subjectNames = useMemo(() => {
-    const names = new Set<string>();
-    chapters.forEach((c) => {
-      const sub = subjectMap[c.subjectId];
-      if (sub) names.add(sub.name);
-    });
-    return ["All", ...Array.from(names)];
-  }, [chapters, subjectMap]);
-
-  const filtered = useMemo(() => {
-    return questions.filter((q) => {
-      if (examType !== "All" && q.examType !== examType) return false;
-      if (difficulty !== "All" && q.difficulty !== difficulty) return false;
-      if (yearFilter !== "All" && String(q.year) !== yearFilter) return false;
-      if (subjectFilter !== "All") {
-        const ch = chapterMap[q.chapterId];
-        if (!ch) return false;
-        const sub = subjectMap[ch.subjectId];
-        if (!sub || sub.name !== subjectFilter) return false;
-      }
-      return true;
-    });
-  }, [questions, examType, difficulty, yearFilter, subjectFilter, chapterMap, subjectMap]);
-
-  const stats = useMemo(() => {
-    const byExam: Record<string, number> = {};
-    questions.forEach((q) => {
-      byExam[q.examType] = (byExam[q.examType] ?? 0) + 1;
-    });
-    return byExam;
-  }, [questions]);
+  const isFiltered =
+    filters.examType !== "All" ||
+    filters.difficulty !== "All" ||
+    filters.year !== "All" ||
+    filters.subjectId !== "All";
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
@@ -223,24 +282,9 @@ export function PYQClient({ questions, chapters, subjects }: Props) {
           <div>
             <h1 className="text-xl sm:text-2xl font-bold">Last Year Question Papers</h1>
             <p className="text-sm text-muted-foreground">
-              {questions.length} questions across all subjects
+              {total} question{total !== 1 ? "s" : ""} across all subjects
             </p>
           </div>
-        </div>
-
-        {/* Stats row */}
-        <div className="flex flex-wrap gap-2 mt-4">
-          {Object.entries(stats).map(([type, count]) => (
-            <div
-              key={type}
-              className={cn(
-                "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold",
-                examTypeBadgeColor(type)
-              )}
-            >
-              {formatExamType(type)}: {count}
-            </div>
-          ))}
         </div>
       </div>
 
@@ -255,8 +299,8 @@ export function PYQClient({ questions, chapters, subjects }: Props) {
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1 block">Exam Type</label>
             <select
-              value={examType}
-              onChange={(e) => setExamType(e.target.value)}
+              value={filters.examType}
+              onChange={(e) => onFilterChange({ examType: e.target.value })}
               className="w-full text-sm rounded-lg border bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/40"
             >
               {EXAM_TYPES.map((t) => (
@@ -271,8 +315,8 @@ export function PYQClient({ questions, chapters, subjects }: Props) {
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1 block">Difficulty</label>
             <select
-              value={difficulty}
-              onChange={(e) => setDifficulty(e.target.value)}
+              value={filters.difficulty}
+              onChange={(e) => onFilterChange({ difficulty: e.target.value })}
               className="w-full text-sm rounded-lg border bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/40"
             >
               {DIFFICULTIES.map((d) => (
@@ -283,80 +327,94 @@ export function PYQClient({ questions, chapters, subjects }: Props) {
             </select>
           </div>
 
-          {/* Year */}
+          {/* Subject */}
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1 block">Year</label>
+            <label className="text-xs font-medium text-muted-foreground mb-1 block">Subject</label>
             <select
-              value={yearFilter}
-              onChange={(e) => setYearFilter(e.target.value)}
+              value={filters.subjectId}
+              onChange={(e) => onFilterChange({ subjectId: e.target.value })}
               className="w-full text-sm rounded-lg border bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/40"
             >
-              {years.map((y) => (
-                <option key={y} value={y}>
-                  {y === "All" ? "All Years" : y}
+              <option value="All">All Subjects</option>
+              {subjects.map((s) => (
+                <option key={s._id} value={s._id}>
+                  {s.name}
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Subject */}
+          {/* Year placeholder — could be populated dynamically */}
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1 block">Subject</label>
+            <label className="text-xs font-medium text-muted-foreground mb-1 block">Year</label>
             <select
-              value={subjectFilter}
-              onChange={(e) => setSubjectFilter(e.target.value)}
+              value={filters.year}
+              onChange={(e) => onFilterChange({ year: e.target.value })}
               className="w-full text-sm rounded-lg border bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/40"
             >
-              {subjectNames.map((s) => (
-                <option key={s} value={s}>
-                  {s === "All" ? "All Subjects" : s}
-                </option>
+              <option value="All">All Years</option>
+              {[2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019].map((y) => (
+                <option key={y} value={String(y)}>{y}</option>
               ))}
             </select>
           </div>
         </div>
 
         {/* Reset */}
-        {(examType !== "All" || difficulty !== "All" || yearFilter !== "All" || subjectFilter !== "All") && (
+        {isFiltered && (
           <Button
             variant="ghost"
             size="sm"
             className="mt-3 text-xs text-muted-foreground"
-            onClick={() => {
-              setExamType("All");
-              setDifficulty("All");
-              setYearFilter("All");
-              setSubjectFilter("All");
-            }}
+            onClick={() =>
+              onFilterChange({ examType: "All", difficulty: "All", year: "All", subjectId: "All" })
+            }
           >
             Clear filters
           </Button>
         )}
       </div>
 
-      {/* Results count */}
-      <p className="text-sm text-muted-foreground mb-4">
-        Showing {filtered.length} question{filtered.length !== 1 ? "s" : ""}
-      </p>
+      {/* Results count + page info */}
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-sm text-muted-foreground">
+          {loading ? "Loading…" : `${total} question${total !== 1 ? "s" : ""}`}
+          {totalPages > 1 && !loading && (
+            <span className="ml-2 text-xs">
+              — page {page} of {totalPages}
+            </span>
+          )}
+        </p>
+      </div>
 
       {/* Question list */}
-      {filtered.length === 0 ? (
+      {loading ? (
+        <div className="space-y-4">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-40 bg-muted rounded-xl animate-pulse" />
+          ))}
+        </div>
+      ) : questions.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
           <FileQuestion className="w-10 h-10 mx-auto mb-3 opacity-40" />
           <p className="font-medium">No questions match your filters</p>
           <p className="text-sm mt-1">Try adjusting the filters above</p>
         </div>
       ) : (
-        <div className="space-y-4">
-          {filtered.map((q, i) => (
-            <QuestionCard
-              key={q._id}
-              question={q}
-              chapterTitle={chapterMap[q.chapterId]?.title ?? "Unknown Chapter"}
-              index={i + 1}
-            />
-          ))}
-        </div>
+        <>
+          <div className="space-y-4">
+            {questions.map((q, i) => (
+              <QuestionCard
+                key={q._id}
+                question={q}
+                chapterTitle={chapterMap[q.chapterId]?.title ?? "Unknown Chapter"}
+                index={(page - 1) * 5 + i + 1}
+              />
+            ))}
+          </div>
+
+          <Pagination page={page} totalPages={totalPages} onPageChange={onPageChange} />
+        </>
       )}
     </div>
   );

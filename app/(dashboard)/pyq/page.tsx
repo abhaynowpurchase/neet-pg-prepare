@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { PYQClient } from "./PYQClient";
 
 type Question = {
@@ -10,39 +10,94 @@ type Question = {
 type Chapter = { _id: string; title: string; subjectId: string };
 type Subject = { _id: string; name: string };
 
+type Filters = {
+  examType: string;
+  difficulty: string;
+  year: string;
+  subjectId: string;
+};
+
+const PAGE_SIZE = 5;
+
 export default function PYQPage() {
-  const [data, setData] = useState<{ questions: Question[]; chapters: Chapter[]; subjects: Subject[] } | null>(null);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [page, setPage] = useState(1);
+  const [filters, setFilters] = useState<Filters>({
+    examType: "All",
+    difficulty: "All",
+    year: "All",
+    subjectId: "All",
+  });
   const [loading, setLoading] = useState(true);
+  const abortRef = useRef<AbortController | null>(null);
+
+  const fetchData = useCallback(
+    async (p: number, f: Filters) => {
+      abortRef.current?.abort();
+      abortRef.current = new AbortController();
+
+      setLoading(true);
+      try {
+        const params = new URLSearchParams({
+          page: String(p),
+          limit: String(PAGE_SIZE),
+          ...(f.examType !== "All" && { examType: f.examType }),
+          ...(f.difficulty !== "All" && { difficulty: f.difficulty }),
+          ...(f.year !== "All" && { year: f.year }),
+          ...(f.subjectId !== "All" && { subjectId: f.subjectId }),
+        });
+
+        const res = await fetch(`/api/pyq?${params}`, {
+          signal: abortRef.current.signal,
+        });
+        const data = await res.json();
+
+        setQuestions(data.questions ?? []);
+        setTotal(data.total ?? 0);
+        setTotalPages(data.pages ?? 1);
+        setPage(data.page ?? 1);
+        // Chapters/subjects don't change — only update if not yet loaded
+        if (data.chapters?.length) setChapters(data.chapters);
+        if (data.subjects?.length) setSubjects(data.subjects);
+      } catch (e: any) {
+        if (e?.name !== "AbortError") console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
-    fetch("/api/pyq")
-      .then((r) => r.json())
-      .then(setData)
-      .finally(() => setLoading(false));
-  }, []);
+    fetchData(1, filters);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters]);
 
-  if (loading) {
-    return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-12 bg-muted rounded-lg w-64" />
-          <div className="h-4 bg-muted rounded w-48" />
-          <div className="h-24 bg-muted rounded-xl mt-6" />
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-40 bg-muted rounded-xl" />
-          ))}
-        </div>
-      </div>
-    );
-  }
+  const handlePageChange = (p: number) => {
+    fetchData(p, filters);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
-  if (!data) return null;
+  const handleFilterChange = (next: Partial<Filters>) => {
+    setFilters((prev) => ({ ...prev, ...next }));
+  };
 
   return (
     <PYQClient
-      questions={data.questions}
-      chapters={data.chapters}
-      subjects={data.subjects}
+      questions={questions}
+      chapters={chapters}
+      subjects={subjects}
+      total={total}
+      page={page}
+      totalPages={totalPages}
+      loading={loading}
+      filters={filters}
+      onFilterChange={handleFilterChange}
+      onPageChange={handlePageChange}
     />
   );
 }

@@ -6,7 +6,7 @@ import Question from "@/models/Question";
 import Chapter from "@/models/Chapter";
 import Subject from "@/models/Subject";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -15,8 +15,31 @@ export async function GET() {
 
     await connectToDatabase();
 
-    const [questions, chapters, subjects] = await Promise.all([
-      Question.find({}).sort({ year: -1, examType: 1 }).lean(),
+    const { searchParams } = new URL(req.url);
+    const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
+    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") ?? "5", 10)));
+    const examType = searchParams.get("examType") ?? "";
+    const difficulty = searchParams.get("difficulty") ?? "";
+    const year = searchParams.get("year") ?? "";
+    const subjectId = searchParams.get("subjectId") ?? "";
+
+    // Build MongoDB filter
+    const query: Record<string, unknown> = {};
+    if (examType && examType !== "All") query.examType = examType;
+    if (difficulty && difficulty !== "All") query.difficulty = difficulty;
+    if (year && year !== "All") query.year = parseInt(year, 10);
+    if (subjectId && subjectId !== "All") {
+      const chapterIds = await Chapter.find({ subjectId }).select("_id").lean();
+      query.chapterId = { $in: (chapterIds as any[]).map((c) => c._id) };
+    }
+
+    const [total, questions, chapters, subjects] = await Promise.all([
+      Question.countDocuments(query),
+      Question.find(query)
+        .sort({ year: -1, examType: 1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
       Chapter.find({}).select("_id title subjectId").lean(),
       Subject.find({}).select("_id name").lean(),
     ]);
@@ -42,6 +65,10 @@ export async function GET() {
         _id: String(s._id),
         name: String(s.name ?? ""),
       })),
+      total,
+      pages: Math.ceil(total / limit),
+      page,
+      limit,
     });
   } catch (error) {
     console.error("GET /api/pyq error:", error);
