@@ -28,6 +28,9 @@ const SchedulerLogSchema = new Schema<ISchedulerLogDocument>(
   { timestamps: true }
 );
 
+// Status page fetches last N logs sorted by runAt desc
+SchedulerLogSchema.index({ runAt: -1 });
+
 const SchedulerLog =
   mongoose.models.SchedulerLog ||
   mongoose.model<ISchedulerLogDocument>("SchedulerLog", SchedulerLogSchema);

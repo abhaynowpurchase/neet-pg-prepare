@@ -69,8 +69,18 @@ const QuestionSchema = new Schema<IQuestionDocument>(
   }
 );
 
-QuestionSchema.index({ chapterId: 1, examType: 1 });
-QuestionSchema.index({ chapterId: 1, year: -1 });
+// Chapter-scoped queries (chapter page quiz, fetch-pyq dedup/count)
+QuestionSchema.index({ chapterId: 1, examType: 1, year: -1 });
+QuestionSchema.index({ chapterId: 1, examType: 1, difficulty: 1 });
+
+// PYQ page: filter by exam type + sort by year
+QuestionSchema.index({ examType: 1, year: -1 });
+
+// PYQ page: filter by exam type + difficulty + sort by year
+QuestionSchema.index({ examType: 1, difficulty: 1, year: -1 });
+
+// PYQ page: default sort (no filters) — matches .sort({ year: -1, examType: 1 })
+QuestionSchema.index({ year: -1, examType: 1 });
 
 const Question =
   mongoose.models.Question ||

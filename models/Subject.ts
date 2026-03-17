@@ -41,6 +41,9 @@ const SubjectSchema = new Schema<ISubjectDocument>(
   }
 );
 
+// All subject listings sort by order
+SubjectSchema.index({ order: 1 });
+
 const Subject =
   mongoose.models.Subject ||
   mongoose.model<ISubjectDocument>("Subject", SubjectSchema);

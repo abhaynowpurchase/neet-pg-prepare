@@ -53,6 +53,8 @@ const ChapterSchema = new Schema<IChapterDocument>(
 );
 
 ChapterSchema.index({ subjectId: 1, order: 1 });
+// Scheduler picks oldest-updated chapters
+ChapterSchema.index({ updatedAt: 1 });
 
 const Chapter =
   mongoose.models.Chapter ||
