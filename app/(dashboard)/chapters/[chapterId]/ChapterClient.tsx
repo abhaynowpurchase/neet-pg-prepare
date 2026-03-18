@@ -33,6 +33,7 @@ export default function ChapterClient({ chapterId }: { chapterId: string }) {
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [examTypeMap, setExamTypeMap] = useState<Record<string, number>>({});
   const [flashcardCount, setFlashcardCount] = useState(0);
+  const [has3DScene, setHas3DScene] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -41,8 +42,9 @@ export default function ChapterClient({ chapterId }: { chapterId: string }) {
       fetch(`/api/chapters/${chapterId}/questions?limit=100`).then((r) => r.json()),
       fetch(`/api/progress?chapterId=${chapterId}`).then((r) => r.json()),
       fetch(`/api/chapters/${chapterId}/flashcards`).then((r) => r.json()),
-    ]).then(([chapterRes, questionsRes, progressRes, flashcardsRes]) => {
-      setChapter(chapterRes.chapter ?? null);
+    ]).then(async ([chapterRes, questionsRes, progressRes, flashcardsRes]) => {
+      const ch = chapterRes.chapter ?? null;
+      setChapter(ch);
 
       const qs = questionsRes.questions ?? [];
       setTotalQuestions(qs.length);
@@ -54,6 +56,12 @@ export default function ChapterClient({ chapterId }: { chapterId: string }) {
 
       setProgress(progressRes.progress?.[0] ?? null);
       setFlashcardCount((flashcardsRes.flashcards ?? []).length);
+
+      // Only show 3D card if a scene exists for this chapter
+      if (ch?.title) {
+        const sceneRes = await fetch(`/api/anatomy-scene?title=${encodeURIComponent(ch.title)}`).then((r) => r.json());
+        setHas3DScene(!!sceneRes.scene);
+      }
     }).finally(() => setLoading(false));
   }, [chapterId]);
 
@@ -180,41 +188,42 @@ export default function ChapterClient({ chapterId }: { chapterId: string }) {
         </Card>
       </div>
 
-      {/* 3D Image Animation Based Learning */}
-      <Card className="group hover:border-purple-400/50 hover:shadow-md transition-all mb-6 relative overflow-hidden">
-        {/* Gradient shimmer background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-blue-500/5 to-cyan-500/5 pointer-events-none" />
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-purple-100 to-blue-100">
-                <Box className="w-5 h-5 text-purple-600" />
+      {/* 3D Image Animation Based Learning — only shown when a scene exists */}
+      {has3DScene && (
+        <Card className="group hover:border-purple-400/50 hover:shadow-md transition-all mb-6 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-blue-500/5 to-cyan-500/5 pointer-events-none" />
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-purple-100 to-blue-100">
+                  <Box className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <CardTitle className="text-base">3D Image Animation Learning</CardTitle>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Interactive 3D anatomy • Click structures to explore
+                  </p>
+                </div>
               </div>
-              <div>
-                <CardTitle className="text-base">3D Image Animation Learning</CardTitle>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Interactive 3D anatomy • Click structures to explore
-                </p>
-              </div>
+              <span className="text-xs font-semibold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">
+                NEW
+              </span>
             </div>
-            <span className="text-xs font-semibold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">
-              NEW
-            </span>
-          </div>
-        </CardHeader>
-        <CardContent className="pb-5">
-          <p className="text-sm text-muted-foreground mb-4">
-            Explore anatomical structures through interactive 3D models. Rotate, zoom, and click on
-            structures to reveal clinical details and high-yield NEET PG points.
-          </p>
-          <Button asChild className="w-full gap-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-0">
-            <Link href={`/chapters/${chapterId}/3d-learning`}>
-              <Box size={16} />
-              Launch 3D Viewer
-            </Link>
-          </Button>
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent className="pb-5">
+            <p className="text-sm text-muted-foreground mb-4">
+              Explore anatomical structures through interactive 3D models. Rotate, zoom, and click on
+              structures to reveal clinical details and high-yield NEET PG points.
+            </p>
+            <Button asChild className="w-full gap-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-0">
+              <Link href={`/chapters/${chapterId}/3d-learning`}>
+                <Box size={16} />
+                Launch 3D Viewer
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Practice Quiz — secondary section */}
       <Card className="group hover:border-blue-400/50 hover:shadow-md transition-all mb-6">
