@@ -20,42 +20,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
+const ADMIN_EMAIL = "abhay@nowpurchase.com";
+
 const navItems = [
-  {
-    label: "Dashboard",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    label: "Subjects",
-    href: "/subjects",
-    icon: BookOpen,
-  },
-  {
-    label: "High Yield",
-    href: "/high-yield",
-    icon: Star,
-  },
-  {
-    label: "Progress",
-    href: "/progress",
-    icon: Trophy,
-  },
-  {
-    label: "Last Year QP",
-    href: "/pyq",
-    icon: FileQuestion,
-  },
-  {
-    label: "Expected Questions",
-    href: "/expected-questions",
-    icon: Flame,
-  },
-  {
-    label: "Crawler",
-    href: "/crawler",
-    icon: Bot,
-  },
+  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Subjects", href: "/subjects", icon: BookOpen },
+  { label: "High Yield", href: "/high-yield", icon: Star },
+  { label: "Progress", href: "/progress", icon: Trophy },
+  { label: "Last Year QP", href: "/pyq", icon: FileQuestion },
+  { label: "Expected Questions", href: "/expected-questions", icon: Flame },
+];
+
+const adminNavItems = [
+  { label: "Crawler", href: "/crawler", icon: Bot },
 ];
 
 export function Sidebar() {
@@ -87,7 +64,7 @@ export function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-1">
-        {navItems.map((item) => {
+        {[...navItems, ...(user?.email === ADMIN_EMAIL ? adminNavItems : [])].map((item) => {
           const Icon = item.icon;
           const isActive =
             pathname === item.href || pathname.startsWith(item.href + "/");
