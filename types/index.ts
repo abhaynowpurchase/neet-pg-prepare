@@ -62,6 +62,30 @@ export interface IUserProgress {
   lastAccessedAt: string;
 }
 
+export interface IAnatomyPart {
+  id: string;
+  label: string;
+  position: [number, number, number];
+  rotation?: [number, number, number];
+  geometry: "box" | "sphere" | "cylinder" | "torus" | "cone" | "capsule";
+  size: [number, number, number] | [number, number, number, number];
+  color: string;
+  emissiveColor?: string;
+  info: string;
+  pulse?: boolean;
+}
+
+export interface IAnatomyScene {
+  chapterKey: string;
+  title: string;
+  description: string;
+  bgColor: string;
+  parts: IAnatomyPart[];
+  cameraPosition: [number, number, number];
+  autoRotate?: boolean;
+  highlights?: string[];
+}
+
 export interface QuizState {
   questions: IQuestion[];
   currentIndex: number;

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   ArrowLeft, BookOpen, Clock, HelpCircle, Star, PlayCircle,
-  CheckCircle2, Layers,
+  CheckCircle2, Layers, Box,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -121,6 +121,7 @@ export default function ChapterClient({ chapterId }: { chapterId: string }) {
 
       {/* Two primary learning modes */}
       <div className="grid sm:grid-cols-2 gap-4 mb-6">
+
         {/* Story Based Learning */}
         <Card className="group hover:border-primary/40 hover:shadow-md transition-all">
           <CardHeader className="pb-3">
@@ -178,6 +179,42 @@ export default function ChapterClient({ chapterId }: { chapterId: string }) {
           </CardContent>
         </Card>
       </div>
+
+      {/* 3D Image Animation Based Learning */}
+      <Card className="group hover:border-purple-400/50 hover:shadow-md transition-all mb-6 relative overflow-hidden">
+        {/* Gradient shimmer background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-blue-500/5 to-cyan-500/5 pointer-events-none" />
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-purple-100 to-blue-100">
+                <Box className="w-5 h-5 text-purple-600" />
+              </div>
+              <div>
+                <CardTitle className="text-base">3D Image Animation Learning</CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Interactive 3D anatomy • Click structures to explore
+                </p>
+              </div>
+            </div>
+            <span className="text-xs font-semibold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">
+              NEW
+            </span>
+          </div>
+        </CardHeader>
+        <CardContent className="pb-5">
+          <p className="text-sm text-muted-foreground mb-4">
+            Explore anatomical structures through interactive 3D models. Rotate, zoom, and click on
+            structures to reveal clinical details and high-yield NEET PG points.
+          </p>
+          <Button asChild className="w-full gap-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-0">
+            <Link href={`/chapters/${chapterId}/3d-learning`}>
+              <Box size={16} />
+              Launch 3D Viewer
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* Practice Quiz — secondary section */}
       <Card className="group hover:border-blue-400/50 hover:shadow-md transition-all mb-6">
