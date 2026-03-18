@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useMemo } from "react";
+import { useRef, useState, useMemo, useEffect } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, Html } from "@react-three/drei";
 import * as THREE from "three";
@@ -165,303 +165,345 @@ function getRegion(chapterKey: string) {
   );
 }
 
-// ── Human Body Silhouette — skeleton + muscle form ──────────────────────────
+// ── Human Body Silhouette — clean skeleton on black ─────────────────────────
 function BodySilhouette({ opacity }: { opacity: number }) {
   const o = opacity;
 
-  // Bone material — pale ivory
   const bone = {
-    color: "#c8bfa8", transparent: true, opacity: o * 0.85,
-    roughness: 0.6, metalness: 0.05,
+    color: "#ddd5be", transparent: true, opacity: o,
+    roughness: 0.55, metalness: 0.08,
+    emissive: "#a89878" as string, emissiveIntensity: 0.18,
   };
-  // Muscle / soft tissue — warm rose-beige
-  const muscle = {
-    color: "#c07060", transparent: true, opacity: o * 0.35,
-    roughness: 0.8, metalness: 0.0,
-  };
-  // Cartilage — slightly blue-white
   const cartilage = {
-    color: "#9ab4c8", transparent: true, opacity: o * 0.55,
-    roughness: 0.5, metalness: 0.0,
+    color: "#aac4d4", transparent: true, opacity: o * 0.85,
+    roughness: 0.4, metalness: 0.0,
+    emissive: "#6699aa" as string, emissiveIntensity: 0.12,
   };
+  const dark = { color: "#000000" };
 
   return (
     <group>
       {/* ── SKULL ── */}
-      {/* Cranium */}
       <mesh position={[0, 5.55, 0]}>
-        <sphereGeometry args={[0.72, 20, 16]} />
+        <sphereGeometry args={[0.72, 24, 18]} />
         <meshStandardMaterial {...bone} />
       </mesh>
-      {/* Face / mandible block */}
-      <mesh position={[0, 4.95, 0.38]}>
-        <boxGeometry args={[0.7, 0.55, 0.5]} />
+      {/* Eye orbits (dark holes) */}
+      <mesh position={[-0.23, 5.5, 0.58]}>
+        <sphereGeometry args={[0.155, 10, 10]} />
+        <meshStandardMaterial {...dark} />
+      </mesh>
+      <mesh position={[0.23, 5.5, 0.58]}>
+        <sphereGeometry args={[0.155, 10, 10]} />
+        <meshStandardMaterial {...dark} />
+      </mesh>
+      {/* Nasal aperture */}
+      <mesh position={[0, 5.2, 0.66]}>
+        <sphereGeometry args={[0.08, 8, 8]} />
+        <meshStandardMaterial {...dark} />
+      </mesh>
+      {/* Zygomatic arches */}
+      <mesh position={[-0.58, 5.38, 0.3]} rotation={[0, 0.35, 0.1]}>
+        <capsuleGeometry args={[0.05, 0.5, 4, 6]} />
         <meshStandardMaterial {...bone} />
       </mesh>
-      {/* Mandible lower jaw */}
-      <mesh position={[0, 4.72, 0.35]} rotation={[0.18, 0, 0]}>
-        <boxGeometry args={[0.58, 0.18, 0.38]} />
+      <mesh position={[0.58, 5.38, 0.3]} rotation={[0, -0.35, -0.1]}>
+        <capsuleGeometry args={[0.05, 0.5, 4, 6]} />
+        <meshStandardMaterial {...bone} />
+      </mesh>
+      {/* Maxilla / midface */}
+      <mesh position={[0, 5.0, 0.44]}>
+        <boxGeometry args={[0.62, 0.38, 0.38]} />
+        <meshStandardMaterial {...bone} />
+      </mesh>
+      {/* Mandible */}
+      <mesh position={[0, 4.74, 0.36]} rotation={[0.2, 0, 0]}>
+        <boxGeometry args={[0.55, 0.16, 0.32]} />
         <meshStandardMaterial {...bone} />
       </mesh>
 
-      {/* ── CERVICAL SPINE ── */}
-      {/* C1–C7 as a tapered column */}
-      <mesh position={[0, 4.45, -0.08]}>
-        <cylinderGeometry args={[0.16, 0.2, 0.75, 8]} />
-        <meshStandardMaterial {...bone} />
-      </mesh>
-      {/* Neck muscle bulk */}
-      <mesh position={[0, 4.45, 0]}>
-        <capsuleGeometry args={[0.28, 0.65, 4, 10]} />
-        <meshStandardMaterial {...muscle} />
-      </mesh>
+      {/* ── CERVICAL SPINE C1–C7 ── */}
+      {[4.42, 4.28, 4.14, 4.0, 3.86, 3.74, 3.62].map((y, i) => (
+        <mesh key={i} position={[0, y, -0.06]}>
+          <cylinderGeometry args={[0.17 - i * 0.004, 0.19 - i * 0.004, 0.1, 8]} />
+          <meshStandardMaterial {...bone} />
+        </mesh>
+      ))}
 
       {/* ── CLAVICLES ── */}
-      <mesh position={[-0.72, 4.05, 0.1]} rotation={[0, 0.15, 0.12]}>
-        <cylinderGeometry args={[0.07, 0.07, 1.1, 8]} />
+      <mesh position={[-0.74, 4.08, 0.12]} rotation={[0.05, 0.22, 0.15]}>
+        <capsuleGeometry args={[0.06, 1.0, 4, 8]} />
         <meshStandardMaterial {...bone} />
       </mesh>
-      <mesh position={[0.72, 4.05, 0.1]} rotation={[0, -0.15, -0.12]}>
-        <cylinderGeometry args={[0.07, 0.07, 1.1, 8]} />
+      <mesh position={[0.74, 4.08, 0.12]} rotation={[0.05, -0.22, -0.15]}>
+        <capsuleGeometry args={[0.06, 1.0, 4, 8]} />
+        <meshStandardMaterial {...bone} />
+      </mesh>
+
+      {/* ── SCAPULAE ── */}
+      <mesh position={[-1.1, 3.65, -0.42]} rotation={[0.18, 0.18, 0.12]}>
+        <boxGeometry args={[0.82, 0.88, 0.08]} />
+        <meshStandardMaterial {...bone} />
+      </mesh>
+      <mesh position={[1.1, 3.65, -0.42]} rotation={[0.18, -0.18, -0.12]}>
+        <boxGeometry args={[0.82, 0.88, 0.08]} />
         <meshStandardMaterial {...bone} />
       </mesh>
 
       {/* ── RIBCAGE ── */}
-      {/* Sternum */}
-      <mesh position={[0, 3.35, 0.45]}>
-        <boxGeometry args={[0.22, 1.8, 0.12]} />
+      {/* Sternum — manubrium + body */}
+      <mesh position={[0, 3.75, 0.46]}>
+        <boxGeometry args={[0.26, 0.42, 0.1]} />
         <meshStandardMaterial {...bone} />
       </mesh>
-      {/* Thoracic spine */}
-      <mesh position={[0, 3.35, -0.42]}>
-        <cylinderGeometry args={[0.18, 0.2, 1.9, 8]} />
+      <mesh position={[0, 3.2, 0.47]}>
+        <boxGeometry args={[0.2, 0.95, 0.09]} />
         <meshStandardMaterial {...bone} />
       </mesh>
-      {/* Ribs — 4 pairs as curved tori */}
-      {[3.9, 3.55, 3.2, 2.85, 2.5, 2.15].map((y, i) => (
-        <group key={i}>
-          <mesh position={[0, y, 0.1]} rotation={[Math.PI / 2, 0, 0]}>
-            <torusGeometry args={[0.72 - i * 0.04, 0.05, 6, 18, Math.PI]} />
+      {/* Xiphoid process */}
+      <mesh position={[0, 2.7, 0.46]}>
+        <coneGeometry args={[0.08, 0.22, 6]} />
+        <meshStandardMaterial {...cartilage} />
+      </mesh>
+      {/* Thoracic spine T1–T12 */}
+      {Array.from({ length: 12 }, (_, i) => (
+        <mesh key={i} position={[0, 3.9 - i * 0.16, -0.42]}>
+          <cylinderGeometry args={[0.16, 0.18, 0.12, 8]} />
+          <meshStandardMaterial {...bone} />
+        </mesh>
+      ))}
+      {/* Ribs — 12 pairs, proper arc shape */}
+      {[3.88, 3.72, 3.56, 3.4, 3.24, 3.08, 2.92, 2.76, 2.62, 2.5, 2.4, 2.3].map((y, i) => {
+        const r = 0.82 - i * 0.038;
+        const thickness = i < 10 ? 0.042 : 0.032;
+        // last 2 are floating ribs (shorter arc)
+        const arc = i < 10 ? Math.PI : Math.PI * 0.65;
+        return (
+          <mesh key={i} position={[0, y, 0.06]} rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[r, thickness, 6, 20, arc]} />
             <meshStandardMaterial {...bone} />
+          </mesh>
+        );
+      })}
+      {/* Costal cartilage connecting floating ribs to sternum */}
+      {[2.78, 2.62].map((y, i) => (
+        <group key={i}>
+          <mesh position={[-0.55 - i * 0.12, y, 0.3]} rotation={[0.1, 0, 0.4]}>
+            <capsuleGeometry args={[0.035, 0.5, 4, 6]} />
+            <meshStandardMaterial {...cartilage} />
+          </mesh>
+          <mesh position={[0.55 + i * 0.12, y, 0.3]} rotation={[0.1, 0, -0.4]}>
+            <capsuleGeometry args={[0.035, 0.5, 4, 6]} />
+            <meshStandardMaterial {...cartilage} />
           </mesh>
         </group>
       ))}
-      {/* Chest muscle (pectorals) */}
-      <mesh position={[0, 3.4, 0.38]}>
-        <capsuleGeometry args={[0.72, 1.5, 4, 14]} />
-        <meshStandardMaterial {...muscle} />
-      </mesh>
 
-      {/* ── LUMBAR SPINE + PELVIS ── */}
-      {/* Lumbar vertebrae */}
-      <mesh position={[0, 1.8, -0.28]}>
-        <cylinderGeometry args={[0.22, 0.25, 1.1, 8]} />
+      {/* ── LUMBAR SPINE L1–L5 ── */}
+      {Array.from({ length: 5 }, (_, i) => (
+        <mesh key={i} position={[0, 2.15 - i * 0.18, -0.28]}>
+          <cylinderGeometry args={[0.22, 0.24, 0.14, 8]} />
+          <meshStandardMaterial {...bone} />
+        </mesh>
+      ))}
+
+      {/* ── SACRUM + PELVIS ── */}
+      <mesh position={[0, 1.22, -0.24]} rotation={[0.2, 0, 0]}>
+        <boxGeometry args={[0.48, 0.72, 0.28]} />
         <meshStandardMaterial {...bone} />
       </mesh>
-      {/* Sacrum */}
-      <mesh position={[0, 1.18, -0.22]} rotation={[0.18, 0, 0]}>
-        <boxGeometry args={[0.5, 0.75, 0.32]} />
+      {/* Coccyx */}
+      <mesh position={[0, 0.82, -0.1]} rotation={[0.5, 0, 0]}>
+        <coneGeometry args={[0.07, 0.28, 6]} />
         <meshStandardMaterial {...bone} />
       </mesh>
-      {/* Iliac wings L */}
-      <mesh position={[-0.88, 1.55, -0.1]} rotation={[0.1, 0, -0.25]}>
-        <boxGeometry args={[0.9, 0.75, 0.22]} />
+      {/* Iliac wings — curved plates */}
+      <mesh position={[-0.9, 1.58, -0.08]} rotation={[0.08, 0, -0.28]}>
+        <boxGeometry args={[0.88, 0.72, 0.18]} />
         <meshStandardMaterial {...bone} />
       </mesh>
-      {/* Iliac wings R */}
-      <mesh position={[0.88, 1.55, -0.1]} rotation={[0.1, 0, 0.25]}>
-        <boxGeometry args={[0.9, 0.75, 0.22]} />
+      <mesh position={[0.9, 1.58, -0.08]} rotation={[0.08, 0, 0.28]}>
+        <boxGeometry args={[0.88, 0.72, 0.18]} />
+        <meshStandardMaterial {...bone} />
+      </mesh>
+      {/* Ischium */}
+      <mesh position={[-0.72, 0.98, 0.04]}>
+        <sphereGeometry args={[0.2, 10, 10]} />
+        <meshStandardMaterial {...bone} />
+      </mesh>
+      <mesh position={[0.72, 0.98, 0.04]}>
+        <sphereGeometry args={[0.2, 10, 10]} />
         <meshStandardMaterial {...bone} />
       </mesh>
       {/* Pubic symphysis */}
-      <mesh position={[0, 1.05, 0.32]}>
-        <boxGeometry args={[0.55, 0.28, 0.2]} />
+      <mesh position={[0, 1.08, 0.34]}>
+        <boxGeometry args={[0.52, 0.26, 0.18]} />
         <meshStandardMaterial {...cartilage} />
-      </mesh>
-      {/* Abdominal muscle */}
-      <mesh position={[0, 2.1, 0.18]}>
-        <capsuleGeometry args={[0.62, 1.55, 4, 12]} />
-        <meshStandardMaterial {...muscle} />
-      </mesh>
-
-      {/* ── SCAPULAE ── */}
-      <mesh position={[-1.12, 3.62, -0.45]} rotation={[0.2, 0.2, 0.15]}>
-        <boxGeometry args={[0.85, 0.9, 0.1]} />
-        <meshStandardMaterial {...bone} />
-      </mesh>
-      <mesh position={[1.12, 3.62, -0.45]} rotation={[0.2, -0.2, -0.15]}>
-        <boxGeometry args={[0.85, 0.9, 0.1]} />
-        <meshStandardMaterial {...bone} />
       </mesh>
 
       {/* ── LEFT ARM ── */}
       {/* Humerus */}
-      <mesh position={[-1.52, 3.05, 0]} rotation={[0, 0, 0.22]}>
-        <capsuleGeometry args={[0.16, 1.55, 4, 10]} />
+      <mesh position={[-1.5, 3.08, 0]} rotation={[0, 0, 0.24]}>
+        <capsuleGeometry args={[0.14, 1.5, 4, 10]} />
         <meshStandardMaterial {...bone} />
       </mesh>
-      {/* Elbow joint */}
-      <mesh position={[-1.75, 2.15, 0]}>
-        <sphereGeometry args={[0.18, 10, 10]} />
+      {/* Elbow */}
+      <mesh position={[-1.72, 2.18, 0]}>
+        <sphereGeometry args={[0.17, 10, 10]} />
         <meshStandardMaterial {...cartilage} />
       </mesh>
       {/* Radius */}
-      <mesh position={[-1.82, 1.45, 0.06]} rotation={[0, 0, 0.12]}>
-        <capsuleGeometry args={[0.1, 1.1, 4, 8]} />
+      <mesh position={[-1.8, 1.48, 0.07]} rotation={[0, 0, 0.12]}>
+        <capsuleGeometry args={[0.08, 1.08, 4, 8]} />
         <meshStandardMaterial {...bone} />
       </mesh>
       {/* Ulna */}
-      <mesh position={[-1.72, 1.45, -0.06]} rotation={[0, 0, 0.14]}>
-        <capsuleGeometry args={[0.09, 1.15, 4, 8]} />
+      <mesh position={[-1.68, 1.48, -0.07]} rotation={[0, 0, 0.14]}>
+        <capsuleGeometry args={[0.075, 1.12, 4, 8]} />
         <meshStandardMaterial {...bone} />
       </mesh>
-      {/* Wrist */}
-      <mesh position={[-1.9, 0.72, 0]}>
-        <sphereGeometry args={[0.16, 8, 8]} />
-        <meshStandardMaterial {...cartilage} />
-      </mesh>
-      {/* Hand metacarpals */}
-      <mesh position={[-1.92, 0.42, 0]}>
-        <boxGeometry args={[0.32, 0.45, 0.12]} />
+      {/* Wrist carpals */}
+      <mesh position={[-1.88, 0.74, 0]}>
+        <sphereGeometry args={[0.15, 8, 8]} />
         <meshStandardMaterial {...bone} />
       </mesh>
-      {/* Arm muscle bulk */}
-      <mesh position={[-1.55, 3.0, 0]} rotation={[0, 0, 0.22]}>
-        <capsuleGeometry args={[0.28, 1.4, 4, 10]} />
-        <meshStandardMaterial {...muscle} />
-      </mesh>
-      <mesh position={[-1.8, 1.45, 0]} rotation={[0, 0, 0.13]}>
-        <capsuleGeometry args={[0.2, 1.0, 4, 8]} />
-        <meshStandardMaterial {...muscle} />
-      </mesh>
+      {/* Metacarpals */}
+      {[-0.12, -0.06, 0, 0.06, 0.12].map((xOff, i) => (
+        <mesh key={i} position={[-1.9 + xOff * 0.8, 0.46 - Math.abs(xOff) * 1.2, 0]} rotation={[0, 0, 0.12]}>
+          <capsuleGeometry args={[0.03, 0.28, 4, 6]} />
+          <meshStandardMaterial {...bone} />
+        </mesh>
+      ))}
+      {/* Proximal phalanges */}
+      {[-0.1, -0.05, 0, 0.05, 0.1].map((xOff, i) => (
+        <mesh key={i} position={[-1.96 + xOff * 0.9, 0.18 - Math.abs(xOff) * 1.0, 0]} rotation={[0, 0, 0.1]}>
+          <capsuleGeometry args={[0.025, 0.18, 4, 6]} />
+          <meshStandardMaterial {...bone} />
+        </mesh>
+      ))}
 
       {/* ── RIGHT ARM ── */}
-      <mesh position={[1.52, 3.05, 0]} rotation={[0, 0, -0.22]}>
-        <capsuleGeometry args={[0.16, 1.55, 4, 10]} />
+      <mesh position={[1.5, 3.08, 0]} rotation={[0, 0, -0.24]}>
+        <capsuleGeometry args={[0.14, 1.5, 4, 10]} />
         <meshStandardMaterial {...bone} />
       </mesh>
-      <mesh position={[1.75, 2.15, 0]}>
-        <sphereGeometry args={[0.18, 10, 10]} />
+      <mesh position={[1.72, 2.18, 0]}>
+        <sphereGeometry args={[0.17, 10, 10]} />
         <meshStandardMaterial {...cartilage} />
       </mesh>
-      <mesh position={[1.82, 1.45, 0.06]} rotation={[0, 0, -0.12]}>
-        <capsuleGeometry args={[0.1, 1.1, 4, 8]} />
+      <mesh position={[1.8, 1.48, 0.07]} rotation={[0, 0, -0.12]}>
+        <capsuleGeometry args={[0.08, 1.08, 4, 8]} />
         <meshStandardMaterial {...bone} />
       </mesh>
-      <mesh position={[1.72, 1.45, -0.06]} rotation={[0, 0, -0.14]}>
-        <capsuleGeometry args={[0.09, 1.15, 4, 8]} />
+      <mesh position={[1.68, 1.48, -0.07]} rotation={[0, 0, -0.14]}>
+        <capsuleGeometry args={[0.075, 1.12, 4, 8]} />
         <meshStandardMaterial {...bone} />
       </mesh>
-      <mesh position={[1.9, 0.72, 0]}>
-        <sphereGeometry args={[0.16, 8, 8]} />
-        <meshStandardMaterial {...cartilage} />
-      </mesh>
-      <mesh position={[1.92, 0.42, 0]}>
-        <boxGeometry args={[0.32, 0.45, 0.12]} />
+      <mesh position={[1.88, 0.74, 0]}>
+        <sphereGeometry args={[0.15, 8, 8]} />
         <meshStandardMaterial {...bone} />
       </mesh>
-      <mesh position={[1.55, 3.0, 0]} rotation={[0, 0, -0.22]}>
-        <capsuleGeometry args={[0.28, 1.4, 4, 10]} />
-        <meshStandardMaterial {...muscle} />
-      </mesh>
-      <mesh position={[1.8, 1.45, 0]} rotation={[0, 0, -0.13]}>
-        <capsuleGeometry args={[0.2, 1.0, 4, 8]} />
-        <meshStandardMaterial {...muscle} />
-      </mesh>
+      {[-0.12, -0.06, 0, 0.06, 0.12].map((xOff, i) => (
+        <mesh key={i} position={[1.9 - xOff * 0.8, 0.46 - Math.abs(xOff) * 1.2, 0]} rotation={[0, 0, -0.12]}>
+          <capsuleGeometry args={[0.03, 0.28, 4, 6]} />
+          <meshStandardMaterial {...bone} />
+        </mesh>
+      ))}
+      {[-0.1, -0.05, 0, 0.05, 0.1].map((xOff, i) => (
+        <mesh key={i} position={[1.96 - xOff * 0.9, 0.18 - Math.abs(xOff) * 1.0, 0]} rotation={[0, 0, -0.1]}>
+          <capsuleGeometry args={[0.025, 0.18, 4, 6]} />
+          <meshStandardMaterial {...bone} />
+        </mesh>
+      ))}
 
       {/* ── LEFT LEG ── */}
-      {/* Hip socket */}
-      <mesh position={[-0.58, 0.92, 0]}>
-        <sphereGeometry args={[0.22, 10, 10]} />
+      {/* Femoral head */}
+      <mesh position={[-0.6, 0.96, 0.06]}>
+        <sphereGeometry args={[0.22, 12, 12]} />
         <meshStandardMaterial {...cartilage} />
       </mesh>
-      {/* Femur */}
-      <mesh position={[-0.58, 0.05, 0]}>
-        <capsuleGeometry args={[0.2, 1.55, 4, 12]} />
+      {/* Femur shaft */}
+      <mesh position={[-0.56, 0.06, 0.04]}>
+        <capsuleGeometry args={[0.18, 1.5, 4, 12]} />
         <meshStandardMaterial {...bone} />
       </mesh>
       {/* Patella */}
-      <mesh position={[-0.58, -0.9, 0.2]}>
-        <sphereGeometry args={[0.13, 8, 8]} />
+      <mesh position={[-0.56, -0.88, 0.22]}>
+        <sphereGeometry args={[0.12, 8, 8]} />
         <meshStandardMaterial {...bone} />
       </mesh>
-      {/* Knee joint */}
-      <mesh position={[-0.58, -0.95, 0]}>
+      {/* Knee condyles */}
+      <mesh position={[-0.56, -0.96, 0.04]}>
         <sphereGeometry args={[0.2, 10, 10]} />
         <meshStandardMaterial {...cartilage} />
       </mesh>
       {/* Tibia */}
-      <mesh position={[-0.52, -1.82, 0]}>
-        <capsuleGeometry args={[0.15, 1.55, 4, 10]} />
+      <mesh position={[-0.5, -1.84, 0.02]}>
+        <capsuleGeometry args={[0.13, 1.5, 4, 10]} />
         <meshStandardMaterial {...bone} />
       </mesh>
       {/* Fibula */}
-      <mesh position={[-0.72, -1.82, 0]}>
-        <capsuleGeometry args={[0.08, 1.5, 4, 8]} />
+      <mesh position={[-0.72, -1.84, -0.02]}>
+        <capsuleGeometry args={[0.065, 1.48, 4, 8]} />
         <meshStandardMaterial {...bone} />
       </mesh>
-      {/* Ankle */}
-      <mesh position={[-0.58, -2.65, 0]}>
-        <sphereGeometry args={[0.16, 8, 8]} />
+      {/* Ankle mortise */}
+      <mesh position={[-0.56, -2.66, 0.04]}>
+        <sphereGeometry args={[0.15, 8, 8]} />
         <meshStandardMaterial {...cartilage} />
       </mesh>
-      {/* Foot */}
-      <mesh position={[-0.58, -2.85, 0.38]}>
-        <boxGeometry args={[0.38, 0.22, 0.88]} />
+      {/* Calcaneus */}
+      <mesh position={[-0.56, -2.82, -0.18]}>
+        <boxGeometry args={[0.28, 0.2, 0.52]} />
         <meshStandardMaterial {...bone} />
       </mesh>
-      {/* Thigh muscle */}
-      <mesh position={[-0.58, 0.05, 0]}>
-        <capsuleGeometry args={[0.36, 1.45, 4, 12]} />
-        <meshStandardMaterial {...muscle} />
-      </mesh>
-      {/* Calf muscle */}
-      <mesh position={[-0.58, -1.82, 0]}>
-        <capsuleGeometry args={[0.26, 1.35, 4, 10]} />
-        <meshStandardMaterial {...muscle} />
-      </mesh>
+      {/* Metatarsals */}
+      {[-0.1, -0.05, 0, 0.05, 0.1].map((xOff, i) => (
+        <mesh key={i} position={[-0.56 + xOff * 0.5, -2.86, 0.22 + i * 0.04]} rotation={[0.22, 0, 0]}>
+          <capsuleGeometry args={[0.03, 0.38, 4, 6]} />
+          <meshStandardMaterial {...bone} />
+        </mesh>
+      ))}
 
       {/* ── RIGHT LEG ── */}
-      <mesh position={[0.58, 0.92, 0]}>
-        <sphereGeometry args={[0.22, 10, 10]} />
+      <mesh position={[0.6, 0.96, 0.06]}>
+        <sphereGeometry args={[0.22, 12, 12]} />
         <meshStandardMaterial {...cartilage} />
       </mesh>
-      <mesh position={[0.58, 0.05, 0]}>
-        <capsuleGeometry args={[0.2, 1.55, 4, 12]} />
+      <mesh position={[0.56, 0.06, 0.04]}>
+        <capsuleGeometry args={[0.18, 1.5, 4, 12]} />
         <meshStandardMaterial {...bone} />
       </mesh>
-      <mesh position={[0.58, -0.9, 0.2]}>
-        <sphereGeometry args={[0.13, 8, 8]} />
+      <mesh position={[0.56, -0.88, 0.22]}>
+        <sphereGeometry args={[0.12, 8, 8]} />
         <meshStandardMaterial {...bone} />
       </mesh>
-      <mesh position={[0.58, -0.95, 0]}>
+      <mesh position={[0.56, -0.96, 0.04]}>
         <sphereGeometry args={[0.2, 10, 10]} />
         <meshStandardMaterial {...cartilage} />
       </mesh>
-      <mesh position={[0.52, -1.82, 0]}>
-        <capsuleGeometry args={[0.15, 1.55, 4, 10]} />
+      <mesh position={[0.5, -1.84, 0.02]}>
+        <capsuleGeometry args={[0.13, 1.5, 4, 10]} />
         <meshStandardMaterial {...bone} />
       </mesh>
-      <mesh position={[0.72, -1.82, 0]}>
-        <capsuleGeometry args={[0.08, 1.5, 4, 8]} />
+      <mesh position={[0.72, -1.84, -0.02]}>
+        <capsuleGeometry args={[0.065, 1.48, 4, 8]} />
         <meshStandardMaterial {...bone} />
       </mesh>
-      <mesh position={[0.58, -2.65, 0]}>
-        <sphereGeometry args={[0.16, 8, 8]} />
+      <mesh position={[0.56, -2.66, 0.04]}>
+        <sphereGeometry args={[0.15, 8, 8]} />
         <meshStandardMaterial {...cartilage} />
       </mesh>
-      <mesh position={[0.58, -2.85, 0.38]}>
-        <boxGeometry args={[0.38, 0.22, 0.88]} />
+      <mesh position={[0.56, -2.82, -0.18]}>
+        <boxGeometry args={[0.28, 0.2, 0.52]} />
         <meshStandardMaterial {...bone} />
       </mesh>
-      <mesh position={[0.58, 0.05, 0]}>
-        <capsuleGeometry args={[0.36, 1.45, 4, 12]} />
-        <meshStandardMaterial {...muscle} />
-      </mesh>
-      <mesh position={[0.58, -1.82, 0]}>
-        <capsuleGeometry args={[0.26, 1.35, 4, 10]} />
-        <meshStandardMaterial {...muscle} />
-      </mesh>
+      {[-0.1, -0.05, 0, 0.05, 0.1].map((xOff, i) => (
+        <mesh key={i} position={[0.56 + xOff * 0.5, -2.86, 0.22 + i * 0.04]} rotation={[0.22, 0, 0]}>
+          <capsuleGeometry args={[0.03, 0.38, 4, 6]} />
+          <meshStandardMaterial {...bone} />
+        </mesh>
+      ))}
     </group>
   );
 }
@@ -517,16 +559,21 @@ function PulsingMarker({
   label,
   index,
   onClick,
+  isMobile,
 }: {
   position: [number, number, number];
   label: string;
   index: number;
   onClick: () => void;
+  isMobile: boolean;
 }) {
   const dotRef = useRef<THREE.Mesh>(null);
   const ringRef = useRef<THREE.Mesh>(null);
   const t = useRef(index * 0.65);
   const [hovered, setHovered] = useState(false);
+
+  const dotRadius = isMobile ? 0.16 : 0.1;
+  const ringRadius = isMobile ? 0.18 : 0.1;
 
   useFrame((_, delta) => {
     t.current += delta;
@@ -541,32 +588,53 @@ function PulsingMarker({
     }
   });
 
+  const showLabel = isMobile || hovered;
+
   return (
     <group position={position}>
       {/* Expanding ring */}
       <mesh ref={ringRef}>
-        <torusGeometry args={[0.1, 0.018, 8, 24]} />
+        <torusGeometry args={[ringRadius, 0.018, 8, 24]} />
         <meshStandardMaterial color="#818cf8" transparent opacity={0.6} />
       </mesh>
       {/* Core dot */}
       <mesh
         ref={dotRef}
         onClick={(e) => { e.stopPropagation(); onClick(); }}
-        onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = "pointer"; }}
-        onPointerOut={() => { setHovered(false); document.body.style.cursor = "auto"; }}
+        onPointerOver={(e) => {
+          e.stopPropagation();
+          setHovered(true);
+          if (!isMobile) document.body.style.cursor = "pointer";
+        }}
+        onPointerOut={() => {
+          setHovered(false);
+          if (!isMobile) document.body.style.cursor = "auto";
+        }}
       >
-        <sphereGeometry args={[0.1, 12, 12]} />
+        <sphereGeometry args={[dotRadius, 12, 12]} />
         <meshStandardMaterial
           color={hovered ? "#ffffff" : "#818cf8"}
           emissive={hovered ? "#6366f1" : "#4338ca"}
           emissiveIntensity={hovered ? 1.2 : 0.8}
         />
       </mesh>
-      {hovered && (
-        <Html center distanceFactor={10} style={{ pointerEvents: "none" }}>
+      {/* Invisible larger touch target on mobile */}
+      {isMobile && (
+        <mesh onClick={(e) => { e.stopPropagation(); onClick(); }} visible={false}>
+          <sphereGeometry args={[0.35, 6, 6]} />
+          <meshStandardMaterial />
+        </mesh>
+      )}
+      {showLabel && (
+        <Html
+          center
+          distanceFactor={10}
+          position={[0, dotRadius + 0.22, 0]}
+          style={{ pointerEvents: "none" }}
+        >
           <div
             style={{ fontSize: "10px", lineHeight: 1.4 }}
-            className="bg-black/80 text-white px-2 py-1 rounded-md whitespace-nowrap font-medium shadow-lg"
+            className="bg-black/85 text-white px-2 py-1 rounded-md whitespace-nowrap font-medium shadow-lg border border-white/10"
           >
             {label}
           </div>
@@ -640,10 +708,12 @@ function AnatomyMesh({
   part,
   selected,
   onSelect,
+  isMobile,
 }: {
   part: AnatomyPart;
   selected: boolean;
   onSelect: (p: AnatomyPart | null) => void;
+  isMobile: boolean;
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
@@ -669,14 +739,24 @@ function AnatomyMesh({
     }
   }, [part.geometry, part.size]);
 
+  // Show label on hover or when selected (desktop + mobile)
+  const showLabel = hovered || selected;
+
   return (
     <group position={part.position} rotation={part.rotation}>
       <mesh
         ref={meshRef}
         geometry={geometry}
         onClick={(e) => { e.stopPropagation(); onSelect(selected ? null : part); }}
-        onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = "pointer"; }}
-        onPointerOut={() => { setHovered(false); document.body.style.cursor = "auto"; }}
+        onPointerOver={(e) => {
+          e.stopPropagation();
+          setHovered(true);
+          if (!isMobile) document.body.style.cursor = "pointer";
+        }}
+        onPointerOut={() => {
+          setHovered(false);
+          if (!isMobile) document.body.style.cursor = "auto";
+        }}
         castShadow
       >
         <meshStandardMaterial
@@ -689,23 +769,24 @@ function AnatomyMesh({
           metalness={0.1}
         />
       </mesh>
-      <Html
-        position={[0, (part.size[1] ?? part.size[0]) * 0.7 + 0.2, 0]}
-        center
-        distanceFactor={12}
-        occlude={false}
-      >
-        <div
-          className={`px-2 py-0.5 rounded text-xs font-semibold whitespace-nowrap pointer-events-none select-none transition-all ${
-            selected ? "bg-white text-black shadow-lg scale-110"
-            : hovered ? "bg-white/90 text-black shadow"
-            : "bg-black/60 text-white"
-          }`}
-          style={{ fontSize: "10px", lineHeight: "1.4" }}
+      {showLabel && (
+        <Html
+          position={[0, (part.size[1] ?? part.size[0]) * 0.7 + 0.2, 0]}
+          center
+          distanceFactor={12}
+          occlude={false}
         >
-          {part.label}
-        </div>
-      </Html>
+          <div
+            className={`px-2 py-0.5 rounded font-semibold whitespace-nowrap pointer-events-none select-none ${
+              selected ? "bg-white text-black shadow-lg"
+              : "bg-white/90 text-black shadow"
+            }`}
+            style={{ fontSize: "10px", lineHeight: "1.4" }}
+          >
+            {part.label}
+          </div>
+        </Html>
+      )}
     </group>
   );
 }
@@ -716,11 +797,13 @@ function SceneGroup({
   selectedPart,
   onSelect,
   autoRotate,
+  isMobile,
 }: {
   scene: AnatomyScene;
   selectedPart: AnatomyPart | null;
   onSelect: (p: AnatomyPart | null) => void;
   autoRotate: boolean;
+  isMobile: boolean;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   useFrame((_, delta) => {
@@ -736,6 +819,7 @@ function SceneGroup({
           part={part}
           selected={selectedPart?.id === part.id}
           onSelect={onSelect}
+          isMobile={isMobile}
         />
       ))}
     </group>
@@ -754,11 +838,22 @@ export default function AnatomyViewer({
   const phaseRef = useRef<ViewPhase>("overview");
   const [selectedPart, setSelectedPart] = useState<AnatomyPart | null>(null);
   const [autoRotate, setAutoRotate] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const controlsRef = useRef<any>(null);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   const region = getRegion(scene.chapterKey);
 
-  const overviewCam = useMemo(() => new THREE.Vector3(0, 1.5, 14), []);
+  const overviewCam = useMemo(
+    () => new THREE.Vector3(0, 1.5, isMobile ? 18 : 14),
+    [isMobile]
+  );
   const detailCam = useMemo(() => new THREE.Vector3(...scene.cameraPosition), [scene.cameraPosition]);
   const overviewLookAt = useMemo(() => new THREE.Vector3(...region.overviewLookAt), [region]);
 
@@ -784,15 +879,20 @@ export default function AnatomyViewer({
   return (
     <div className="w-full h-full relative">
       <Canvas
-        camera={{ position: [0, 1.5, 14], fov: 50 }}
+        camera={{ position: [0, 1.5, isMobile ? 18 : 14], fov: isMobile ? 60 : 50 }}
         shadows
-        style={{ background: phase === "overview" ? "#080c14" : scene.bgColor }}
+        style={{ background: "#000000", touchAction: "none" }}
         onPointerMissed={() => setSelectedPart(null)}
       >
-        <ambientLight intensity={0.45} />
-        <directionalLight position={[5, 8, 5]} intensity={1.2} castShadow />
-        <pointLight position={[-5, 5, -5]} intensity={0.5} color="#aaccff" />
-        <pointLight position={[5, -5, 5]} intensity={0.35} color="#ffaaaa" />
+        <ambientLight intensity={0.25} />
+        {/* Main top-front key light */}
+        <directionalLight position={[2, 10, 6]} intensity={1.8} castShadow />
+        {/* Cool blue rim from behind */}
+        <pointLight position={[0, 4, -8]} intensity={0.9} color="#4488cc" />
+        {/* Subtle fill from below-left */}
+        <pointLight position={[-4, -3, 4]} intensity={0.4} color="#ccddee" />
+        {/* Warm accent from right */}
+        <pointLight position={[6, 2, 3]} intensity={0.35} color="#ffe0bb" />
 
         <CameraController
           phase={phase}
@@ -825,11 +925,16 @@ export default function AnatomyViewer({
                 label={m.label}
                 index={i}
                 onClick={handleExplore}
+                isMobile={isMobile}
               />
             ))}
 
             {/* Region label */}
-            <Html position={[...region.highlightCenter.slice(0, 2) as [number, number], region.highlightSize[2] / 2 + 0.3]} center>
+            <Html
+              position={[...region.highlightCenter.slice(0, 2) as [number, number], region.highlightSize[2] / 2 + 0.3]}
+              center
+              distanceFactor={10}
+            >
               <div className="text-xs font-bold text-indigo-300 bg-black/60 px-2 py-0.5 rounded-full whitespace-nowrap pointer-events-none">
                 {region.regionLabel}
               </div>
@@ -844,6 +949,7 @@ export default function AnatomyViewer({
             selectedPart={selectedPart}
             onSelect={setSelectedPart}
             autoRotate={autoRotate}
+            isMobile={isMobile}
           />
         )}
 
@@ -859,14 +965,14 @@ export default function AnatomyViewer({
 
       {/* ── OVERVIEW overlay ── */}
       {phase === "overview" && (
-        <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-end pb-10">
+        <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-end pb-8 sm:pb-10">
           <div className="pointer-events-auto flex flex-col items-center gap-3">
-            <p className="text-white/60 text-xs">
-              Click a marker or the button below to explore
+            <p className="text-white/60 text-xs text-center px-4">
+              {isMobile ? "Tap a marker or the button below" : "Click a marker or the button below"} to explore
             </p>
             <button
               onClick={handleExplore}
-              className="px-6 py-2.5 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold shadow-lg transition-all hover:scale-105 active:scale-95"
+              className="px-6 py-3 sm:py-2.5 rounded-full bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white text-sm font-semibold shadow-lg transition-all hover:scale-105 active:scale-95"
             >
               Explore {region.regionLabel} →
             </button>
@@ -888,7 +994,7 @@ export default function AnatomyViewer({
           <div className="absolute top-3 left-3">
             <button
               onClick={handleBackToOverview}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/60 text-white/80 hover:text-white text-xs font-medium transition-colors hover:bg-black/80"
+              className="flex items-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-lg bg-black/60 text-white/80 hover:text-white text-xs font-medium transition-colors hover:bg-black/80 active:bg-black/90 min-h-[36px] sm:min-h-0"
             >
               ← Body Overview
             </button>
@@ -898,34 +1004,37 @@ export default function AnatomyViewer({
           <div className="absolute top-3 right-3">
             <button
               onClick={() => setAutoRotate((v) => !v)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shadow-lg ${
+              className={`px-3 py-2 sm:py-1.5 rounded-lg text-xs font-semibold transition-all shadow-lg min-h-[36px] sm:min-h-0 ${
                 autoRotate
                   ? "bg-primary text-primary-foreground"
                   : "bg-black/60 text-white hover:bg-black/80"
               }`}
             >
-              {autoRotate ? "⏸ Pause" : "▶ Auto Rotate"}
+              {autoRotate ? "⏸ Pause" : "▶ Rotate"}
             </button>
           </div>
 
-          {/* Click hint */}
+          {/* Touch/click hint */}
           {!selectedPart && (
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 text-white text-xs px-3 py-1.5 rounded-full pointer-events-none">
-              Click any structure to learn more • Drag to rotate • Scroll to zoom
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 text-white text-xs px-3 py-1.5 rounded-full pointer-events-none whitespace-nowrap">
+              {isMobile
+                ? "Tap a structure • Drag to rotate • Pinch to zoom"
+                : "Click any structure to learn more • Drag to rotate • Scroll to zoom"}
             </div>
           )}
 
           {/* Info panel */}
           {selectedPart && (
-            <div className="absolute bottom-0 left-0 right-0 bg-black/85 backdrop-blur border-t border-white/10 p-4 animate-in slide-in-from-bottom">
+            <div className="absolute bottom-0 left-0 right-0 bg-black/90 backdrop-blur border-t border-white/10 p-3 sm:p-4 animate-in slide-in-from-bottom">
               <div className="flex items-start justify-between gap-3 max-w-2xl mx-auto">
-                <div>
+                <div className="min-w-0">
                   <h3 className="text-white font-bold text-sm mb-1">{selectedPart.label}</h3>
-                  <p className="text-gray-300 text-xs leading-relaxed">{selectedPart.info}</p>
+                  <p className="text-gray-300 text-xs leading-relaxed line-clamp-3 sm:line-clamp-none">{selectedPart.info}</p>
                 </div>
                 <button
                   onClick={() => setSelectedPart(null)}
-                  className="text-gray-400 hover:text-white text-xl leading-none shrink-0 mt-0.5"
+                  className="text-gray-400 hover:text-white text-xl leading-none shrink-0 mt-0.5 p-1 -m-1"
+                  aria-label="Close"
                 >
                   ✕
                 </button>
