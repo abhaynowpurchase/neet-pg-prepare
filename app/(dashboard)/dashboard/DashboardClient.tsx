@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { SubjectCard } from "@/components/dashboard/SubjectCard";
 import { ProgressStats } from "@/components/dashboard/ProgressStats";
-import ExpectedQuestions from "@/components/dashboard/ExpectedQuestions";
 import { ISubject } from "@/types";
 
 type SubjectData = ISubject & { chaptersCount: number; completedCount: number };
@@ -91,8 +90,6 @@ export default function DashboardClient() {
           </div>
         )}
       </div>
-
-      <ExpectedQuestions />
     </div>
   );
 }

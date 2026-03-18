@@ -40,8 +40,10 @@ export async function connectToDatabase(): Promise<typeof mongoose> {
     const opts = {
       bufferCommands: false,
       maxPoolSize: 10,
+      minPoolSize: 2,           // keep 2 connections warm between requests
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
+      heartbeatFrequencyMS: 10000, // detect stale connections quickly
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((m) => {

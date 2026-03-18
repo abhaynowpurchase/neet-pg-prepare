@@ -12,6 +12,7 @@ import {
   Stethoscope,
   Trophy,
   FileQuestion,
+  Flame,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ const navItems = [
   { label: "High Yield", href: "/high-yield", icon: Star },
   { label: "Progress", href: "/progress", icon: Trophy },
   { label: "Last Year QP", href: "/pyq", icon: FileQuestion },
+  { label: "Expected Questions", href: "/expected-questions", icon: Flame },
 ];
 
 interface Props {

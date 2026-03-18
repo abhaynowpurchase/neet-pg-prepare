@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronUp, CheckCircle2, XCircle, Flame, BookOpen } from "lucide-react";
+import { ChevronDown, ChevronUp, CheckCircle2, XCircle, Flame, BookOpen, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,7 @@ type Question = {
   examType: string;
   year: number;
   difficulty: string;
+  reason?: string;
 };
 
 type ChapterMeta = { _id: string; title: string; subjectId: string };
@@ -105,6 +106,12 @@ function QuestionCard({
                 </span>
               )}
             </div>
+            {question.reason && (
+              <div className="flex items-center gap-1 mb-1.5">
+                <TrendingUp size={10} className="text-orange-500 shrink-0" />
+                <span className="text-xs text-orange-600 font-medium">{question.reason}</span>
+              </div>
+            )}
             <p className="text-sm font-medium leading-snug line-clamp-2 sm:line-clamp-none">
               {question.question}
             </p>
@@ -179,11 +186,14 @@ function QuestionCard({
   );
 }
 
+const PAGE_SIZE = 10;
+
 export default function ExpectedQuestions() {
   const [activeTab, setActiveTab] =
     useState<(typeof EXAM_TABS)[number]["key"]>("All");
   const [data, setData] = useState<ResponseData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   useEffect(() => {
     fetch(`/api/expected-questions`)
@@ -191,6 +201,9 @@ export default function ExpectedQuestions() {
       .then(setData)
       .finally(() => setLoading(false));
   }, []);
+
+  // Reset visible count when tab changes
+  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [activeTab]);
 
   const chapterMap = Object.fromEntries(
     (data?.chapters ?? []).map((c) => [c._id, c])
@@ -203,6 +216,9 @@ export default function ExpectedQuestions() {
     activeTab === "All"
       ? (data?.questions ?? [])
       : (data?.questions ?? []).filter((q) => q.examType === activeTab);
+
+  const visible = filtered.slice(0, visibleCount);
+  const hasMore = visibleCount < filtered.length;
 
   return (
     <div className="mt-10">
@@ -262,16 +278,37 @@ export default function ExpectedQuestions() {
 
       {/* Question list */}
       {!loading && filtered.length > 0 && (
-        <div className="space-y-3">
-          {filtered.map((q) => (
-            <QuestionCard
-              key={q._id}
-              question={q}
-              chapter={chapterMap[q.chapterId]}
-              subject={subjectMap[chapterMap[q.chapterId]?.subjectId ?? ""]}
-            />
-          ))}
-        </div>
+        <>
+          <div className="space-y-3">
+            {visible.map((q) => (
+              <QuestionCard
+                key={q._id}
+                question={q}
+                chapter={chapterMap[q.chapterId]}
+                subject={subjectMap[chapterMap[q.chapterId]?.subjectId ?? ""]}
+              />
+            ))}
+          </div>
+          {hasMore && (
+            <div className="mt-5 text-center">
+              <Button
+                variant="outline"
+                onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+                className="gap-2"
+              >
+                Load more
+                <span className="text-xs text-muted-foreground">
+                  ({filtered.length - visibleCount} remaining)
+                </span>
+              </Button>
+            </div>
+          )}
+          {!hasMore && filtered.length > PAGE_SIZE && (
+            <p className="mt-4 text-center text-xs text-muted-foreground">
+              All {filtered.length} questions shown
+            </p>
+          )}
+        </>
       )}
     </div>
   );

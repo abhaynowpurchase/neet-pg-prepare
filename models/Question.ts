@@ -82,6 +82,10 @@ QuestionSchema.index({ examType: 1, difficulty: 1, year: -1 });
 // PYQ page: default sort (no filters) — matches .sort({ year: -1, examType: 1 })
 QuestionSchema.index({ year: -1, examType: 1 });
 
+// Expected-questions aggregate: match on examType, group by chapterId, access difficulty + year
+// This is a covered index — no document fetch needed for the stats pipeline
+QuestionSchema.index({ examType: 1, chapterId: 1, difficulty: 1, year: 1 });
+
 const Question =
   mongoose.models.Question ||
   mongoose.model<IQuestionDocument>("Question", QuestionSchema);

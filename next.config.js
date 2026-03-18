@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  compress: true, // gzip / brotli for all Next.js server responses
   experimental: {
     serverComponentsExternalPackages: ["mongoose"],
   },
