@@ -13,6 +13,7 @@ import {
   Trophy,
   FileQuestion,
   Flame,
+  Bot,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ const navItems = [
   { label: "Progress", href: "/progress", icon: Trophy },
   { label: "Last Year QP", href: "/pyq", icon: FileQuestion },
   { label: "Expected Questions", href: "/expected-questions", icon: Flame },
+  { label: "Crawler", href: "/crawler", icon: Bot },
 ];
 
 interface Props {
