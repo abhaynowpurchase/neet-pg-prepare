@@ -165,101 +165,302 @@ function getRegion(chapterKey: string) {
   );
 }
 
-// ── Human Body Silhouette ───────────────────────────────────────────────────
+// ── Human Body Silhouette — skeleton + muscle form ──────────────────────────
 function BodySilhouette({ opacity }: { opacity: number }) {
-  const mat = (color = "#64748b") => ({
-    color,
-    transparent: true,
-    opacity: opacity * 0.28,
-    roughness: 0.9,
-    metalness: 0.0,
-  });
+  const o = opacity;
+
+  // Bone material — pale ivory
+  const bone = {
+    color: "#c8bfa8", transparent: true, opacity: o * 0.85,
+    roughness: 0.6, metalness: 0.05,
+  };
+  // Muscle / soft tissue — warm rose-beige
+  const muscle = {
+    color: "#c07060", transparent: true, opacity: o * 0.35,
+    roughness: 0.8, metalness: 0.0,
+  };
+  // Cartilage — slightly blue-white
+  const cartilage = {
+    color: "#9ab4c8", transparent: true, opacity: o * 0.55,
+    roughness: 0.5, metalness: 0.0,
+  };
 
   return (
     <group>
-      {/* Head */}
-      <mesh position={[0, 5.3, 0]}>
-        <sphereGeometry args={[0.78, 16, 16]} />
-        <meshStandardMaterial {...mat()} />
+      {/* ── SKULL ── */}
+      {/* Cranium */}
+      <mesh position={[0, 5.55, 0]}>
+        <sphereGeometry args={[0.72, 20, 16]} />
+        <meshStandardMaterial {...bone} />
       </mesh>
-      {/* Neck */}
-      <mesh position={[0, 4.55, 0]}>
-        <cylinderGeometry args={[0.24, 0.28, 0.65, 10]} />
-        <meshStandardMaterial {...mat()} />
+      {/* Face / mandible block */}
+      <mesh position={[0, 4.95, 0.38]}>
+        <boxGeometry args={[0.7, 0.55, 0.5]} />
+        <meshStandardMaterial {...bone} />
       </mesh>
-      {/* Torso */}
-      <mesh position={[0, 3.1, 0]}>
-        <capsuleGeometry args={[0.85, 2.2, 4, 12]} />
-        <meshStandardMaterial {...mat()} />
-      </mesh>
-      {/* Pelvis */}
-      <mesh position={[0, 1.4, 0]}>
-        <boxGeometry args={[2.0, 0.9, 0.75]} />
-        <meshStandardMaterial {...mat()} />
+      {/* Mandible lower jaw */}
+      <mesh position={[0, 4.72, 0.35]} rotation={[0.18, 0, 0]}>
+        <boxGeometry args={[0.58, 0.18, 0.38]} />
+        <meshStandardMaterial {...bone} />
       </mesh>
 
-      {/* Left upper arm */}
-      <mesh position={[-1.3, 3.4, 0]} rotation={[0, 0, 0.2]}>
-        <capsuleGeometry args={[0.22, 1.1, 4, 10]} />
-        <meshStandardMaterial {...mat()} />
+      {/* ── CERVICAL SPINE ── */}
+      {/* C1–C7 as a tapered column */}
+      <mesh position={[0, 4.45, -0.08]}>
+        <cylinderGeometry args={[0.16, 0.2, 0.75, 8]} />
+        <meshStandardMaterial {...bone} />
       </mesh>
-      {/* Left forearm */}
-      <mesh position={[-1.5, 2.1, 0]} rotation={[0, 0, 0.15]}>
-        <capsuleGeometry args={[0.17, 1.0, 4, 10]} />
-        <meshStandardMaterial {...mat()} />
-      </mesh>
-      {/* Left hand */}
-      <mesh position={[-1.6, 1.3, 0]}>
-        <boxGeometry args={[0.3, 0.38, 0.14]} />
-        <meshStandardMaterial {...mat()} />
+      {/* Neck muscle bulk */}
+      <mesh position={[0, 4.45, 0]}>
+        <capsuleGeometry args={[0.28, 0.65, 4, 10]} />
+        <meshStandardMaterial {...muscle} />
       </mesh>
 
-      {/* Right upper arm */}
-      <mesh position={[1.3, 3.4, 0]} rotation={[0, 0, -0.2]}>
-        <capsuleGeometry args={[0.22, 1.1, 4, 10]} />
-        <meshStandardMaterial {...mat()} />
+      {/* ── CLAVICLES ── */}
+      <mesh position={[-0.72, 4.05, 0.1]} rotation={[0, 0.15, 0.12]}>
+        <cylinderGeometry args={[0.07, 0.07, 1.1, 8]} />
+        <meshStandardMaterial {...bone} />
       </mesh>
-      {/* Right forearm */}
-      <mesh position={[1.5, 2.1, 0]} rotation={[0, 0, -0.15]}>
-        <capsuleGeometry args={[0.17, 1.0, 4, 10]} />
-        <meshStandardMaterial {...mat()} />
-      </mesh>
-      {/* Right hand */}
-      <mesh position={[1.6, 1.3, 0]}>
-        <boxGeometry args={[0.3, 0.38, 0.14]} />
-        <meshStandardMaterial {...mat()} />
+      <mesh position={[0.72, 4.05, 0.1]} rotation={[0, -0.15, -0.12]}>
+        <cylinderGeometry args={[0.07, 0.07, 1.1, 8]} />
+        <meshStandardMaterial {...bone} />
       </mesh>
 
-      {/* Left upper leg */}
-      <mesh position={[-0.5, 0.55, 0]}>
-        <capsuleGeometry args={[0.3, 1.5, 4, 10]} />
-        <meshStandardMaterial {...mat()} />
+      {/* ── RIBCAGE ── */}
+      {/* Sternum */}
+      <mesh position={[0, 3.35, 0.45]}>
+        <boxGeometry args={[0.22, 1.8, 0.12]} />
+        <meshStandardMaterial {...bone} />
       </mesh>
-      {/* Left lower leg */}
-      <mesh position={[-0.5, -1.35, 0]}>
-        <capsuleGeometry args={[0.22, 1.4, 4, 10]} />
-        <meshStandardMaterial {...mat()} />
+      {/* Thoracic spine */}
+      <mesh position={[0, 3.35, -0.42]}>
+        <cylinderGeometry args={[0.18, 0.2, 1.9, 8]} />
+        <meshStandardMaterial {...bone} />
       </mesh>
-      {/* Left foot */}
-      <mesh position={[-0.5, -2.35, 0.22]}>
-        <boxGeometry args={[0.32, 0.22, 0.7]} />
-        <meshStandardMaterial {...mat()} />
+      {/* Ribs — 4 pairs as curved tori */}
+      {[3.9, 3.55, 3.2, 2.85, 2.5, 2.15].map((y, i) => (
+        <group key={i}>
+          <mesh position={[0, y, 0.1]} rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[0.72 - i * 0.04, 0.05, 6, 18, Math.PI]} />
+            <meshStandardMaterial {...bone} />
+          </mesh>
+        </group>
+      ))}
+      {/* Chest muscle (pectorals) */}
+      <mesh position={[0, 3.4, 0.38]}>
+        <capsuleGeometry args={[0.72, 1.5, 4, 14]} />
+        <meshStandardMaterial {...muscle} />
       </mesh>
 
-      {/* Right upper leg */}
-      <mesh position={[0.5, 0.55, 0]}>
-        <capsuleGeometry args={[0.3, 1.5, 4, 10]} />
-        <meshStandardMaterial {...mat()} />
+      {/* ── LUMBAR SPINE + PELVIS ── */}
+      {/* Lumbar vertebrae */}
+      <mesh position={[0, 1.8, -0.28]}>
+        <cylinderGeometry args={[0.22, 0.25, 1.1, 8]} />
+        <meshStandardMaterial {...bone} />
       </mesh>
-      {/* Right lower leg */}
-      <mesh position={[0.5, -1.35, 0]}>
-        <capsuleGeometry args={[0.22, 1.4, 4, 10]} />
-        <meshStandardMaterial {...mat()} />
+      {/* Sacrum */}
+      <mesh position={[0, 1.18, -0.22]} rotation={[0.18, 0, 0]}>
+        <boxGeometry args={[0.5, 0.75, 0.32]} />
+        <meshStandardMaterial {...bone} />
       </mesh>
-      {/* Right foot */}
-      <mesh position={[0.5, -2.35, 0.22]}>
-        <boxGeometry args={[0.32, 0.22, 0.7]} />
-        <meshStandardMaterial {...mat()} />
+      {/* Iliac wings L */}
+      <mesh position={[-0.88, 1.55, -0.1]} rotation={[0.1, 0, -0.25]}>
+        <boxGeometry args={[0.9, 0.75, 0.22]} />
+        <meshStandardMaterial {...bone} />
+      </mesh>
+      {/* Iliac wings R */}
+      <mesh position={[0.88, 1.55, -0.1]} rotation={[0.1, 0, 0.25]}>
+        <boxGeometry args={[0.9, 0.75, 0.22]} />
+        <meshStandardMaterial {...bone} />
+      </mesh>
+      {/* Pubic symphysis */}
+      <mesh position={[0, 1.05, 0.32]}>
+        <boxGeometry args={[0.55, 0.28, 0.2]} />
+        <meshStandardMaterial {...cartilage} />
+      </mesh>
+      {/* Abdominal muscle */}
+      <mesh position={[0, 2.1, 0.18]}>
+        <capsuleGeometry args={[0.62, 1.55, 4, 12]} />
+        <meshStandardMaterial {...muscle} />
+      </mesh>
+
+      {/* ── SCAPULAE ── */}
+      <mesh position={[-1.12, 3.62, -0.45]} rotation={[0.2, 0.2, 0.15]}>
+        <boxGeometry args={[0.85, 0.9, 0.1]} />
+        <meshStandardMaterial {...bone} />
+      </mesh>
+      <mesh position={[1.12, 3.62, -0.45]} rotation={[0.2, -0.2, -0.15]}>
+        <boxGeometry args={[0.85, 0.9, 0.1]} />
+        <meshStandardMaterial {...bone} />
+      </mesh>
+
+      {/* ── LEFT ARM ── */}
+      {/* Humerus */}
+      <mesh position={[-1.52, 3.05, 0]} rotation={[0, 0, 0.22]}>
+        <capsuleGeometry args={[0.16, 1.55, 4, 10]} />
+        <meshStandardMaterial {...bone} />
+      </mesh>
+      {/* Elbow joint */}
+      <mesh position={[-1.75, 2.15, 0]}>
+        <sphereGeometry args={[0.18, 10, 10]} />
+        <meshStandardMaterial {...cartilage} />
+      </mesh>
+      {/* Radius */}
+      <mesh position={[-1.82, 1.45, 0.06]} rotation={[0, 0, 0.12]}>
+        <capsuleGeometry args={[0.1, 1.1, 4, 8]} />
+        <meshStandardMaterial {...bone} />
+      </mesh>
+      {/* Ulna */}
+      <mesh position={[-1.72, 1.45, -0.06]} rotation={[0, 0, 0.14]}>
+        <capsuleGeometry args={[0.09, 1.15, 4, 8]} />
+        <meshStandardMaterial {...bone} />
+      </mesh>
+      {/* Wrist */}
+      <mesh position={[-1.9, 0.72, 0]}>
+        <sphereGeometry args={[0.16, 8, 8]} />
+        <meshStandardMaterial {...cartilage} />
+      </mesh>
+      {/* Hand metacarpals */}
+      <mesh position={[-1.92, 0.42, 0]}>
+        <boxGeometry args={[0.32, 0.45, 0.12]} />
+        <meshStandardMaterial {...bone} />
+      </mesh>
+      {/* Arm muscle bulk */}
+      <mesh position={[-1.55, 3.0, 0]} rotation={[0, 0, 0.22]}>
+        <capsuleGeometry args={[0.28, 1.4, 4, 10]} />
+        <meshStandardMaterial {...muscle} />
+      </mesh>
+      <mesh position={[-1.8, 1.45, 0]} rotation={[0, 0, 0.13]}>
+        <capsuleGeometry args={[0.2, 1.0, 4, 8]} />
+        <meshStandardMaterial {...muscle} />
+      </mesh>
+
+      {/* ── RIGHT ARM ── */}
+      <mesh position={[1.52, 3.05, 0]} rotation={[0, 0, -0.22]}>
+        <capsuleGeometry args={[0.16, 1.55, 4, 10]} />
+        <meshStandardMaterial {...bone} />
+      </mesh>
+      <mesh position={[1.75, 2.15, 0]}>
+        <sphereGeometry args={[0.18, 10, 10]} />
+        <meshStandardMaterial {...cartilage} />
+      </mesh>
+      <mesh position={[1.82, 1.45, 0.06]} rotation={[0, 0, -0.12]}>
+        <capsuleGeometry args={[0.1, 1.1, 4, 8]} />
+        <meshStandardMaterial {...bone} />
+      </mesh>
+      <mesh position={[1.72, 1.45, -0.06]} rotation={[0, 0, -0.14]}>
+        <capsuleGeometry args={[0.09, 1.15, 4, 8]} />
+        <meshStandardMaterial {...bone} />
+      </mesh>
+      <mesh position={[1.9, 0.72, 0]}>
+        <sphereGeometry args={[0.16, 8, 8]} />
+        <meshStandardMaterial {...cartilage} />
+      </mesh>
+      <mesh position={[1.92, 0.42, 0]}>
+        <boxGeometry args={[0.32, 0.45, 0.12]} />
+        <meshStandardMaterial {...bone} />
+      </mesh>
+      <mesh position={[1.55, 3.0, 0]} rotation={[0, 0, -0.22]}>
+        <capsuleGeometry args={[0.28, 1.4, 4, 10]} />
+        <meshStandardMaterial {...muscle} />
+      </mesh>
+      <mesh position={[1.8, 1.45, 0]} rotation={[0, 0, -0.13]}>
+        <capsuleGeometry args={[0.2, 1.0, 4, 8]} />
+        <meshStandardMaterial {...muscle} />
+      </mesh>
+
+      {/* ── LEFT LEG ── */}
+      {/* Hip socket */}
+      <mesh position={[-0.58, 0.92, 0]}>
+        <sphereGeometry args={[0.22, 10, 10]} />
+        <meshStandardMaterial {...cartilage} />
+      </mesh>
+      {/* Femur */}
+      <mesh position={[-0.58, 0.05, 0]}>
+        <capsuleGeometry args={[0.2, 1.55, 4, 12]} />
+        <meshStandardMaterial {...bone} />
+      </mesh>
+      {/* Patella */}
+      <mesh position={[-0.58, -0.9, 0.2]}>
+        <sphereGeometry args={[0.13, 8, 8]} />
+        <meshStandardMaterial {...bone} />
+      </mesh>
+      {/* Knee joint */}
+      <mesh position={[-0.58, -0.95, 0]}>
+        <sphereGeometry args={[0.2, 10, 10]} />
+        <meshStandardMaterial {...cartilage} />
+      </mesh>
+      {/* Tibia */}
+      <mesh position={[-0.52, -1.82, 0]}>
+        <capsuleGeometry args={[0.15, 1.55, 4, 10]} />
+        <meshStandardMaterial {...bone} />
+      </mesh>
+      {/* Fibula */}
+      <mesh position={[-0.72, -1.82, 0]}>
+        <capsuleGeometry args={[0.08, 1.5, 4, 8]} />
+        <meshStandardMaterial {...bone} />
+      </mesh>
+      {/* Ankle */}
+      <mesh position={[-0.58, -2.65, 0]}>
+        <sphereGeometry args={[0.16, 8, 8]} />
+        <meshStandardMaterial {...cartilage} />
+      </mesh>
+      {/* Foot */}
+      <mesh position={[-0.58, -2.85, 0.38]}>
+        <boxGeometry args={[0.38, 0.22, 0.88]} />
+        <meshStandardMaterial {...bone} />
+      </mesh>
+      {/* Thigh muscle */}
+      <mesh position={[-0.58, 0.05, 0]}>
+        <capsuleGeometry args={[0.36, 1.45, 4, 12]} />
+        <meshStandardMaterial {...muscle} />
+      </mesh>
+      {/* Calf muscle */}
+      <mesh position={[-0.58, -1.82, 0]}>
+        <capsuleGeometry args={[0.26, 1.35, 4, 10]} />
+        <meshStandardMaterial {...muscle} />
+      </mesh>
+
+      {/* ── RIGHT LEG ── */}
+      <mesh position={[0.58, 0.92, 0]}>
+        <sphereGeometry args={[0.22, 10, 10]} />
+        <meshStandardMaterial {...cartilage} />
+      </mesh>
+      <mesh position={[0.58, 0.05, 0]}>
+        <capsuleGeometry args={[0.2, 1.55, 4, 12]} />
+        <meshStandardMaterial {...bone} />
+      </mesh>
+      <mesh position={[0.58, -0.9, 0.2]}>
+        <sphereGeometry args={[0.13, 8, 8]} />
+        <meshStandardMaterial {...bone} />
+      </mesh>
+      <mesh position={[0.58, -0.95, 0]}>
+        <sphereGeometry args={[0.2, 10, 10]} />
+        <meshStandardMaterial {...cartilage} />
+      </mesh>
+      <mesh position={[0.52, -1.82, 0]}>
+        <capsuleGeometry args={[0.15, 1.55, 4, 10]} />
+        <meshStandardMaterial {...bone} />
+      </mesh>
+      <mesh position={[0.72, -1.82, 0]}>
+        <capsuleGeometry args={[0.08, 1.5, 4, 8]} />
+        <meshStandardMaterial {...bone} />
+      </mesh>
+      <mesh position={[0.58, -2.65, 0]}>
+        <sphereGeometry args={[0.16, 8, 8]} />
+        <meshStandardMaterial {...cartilage} />
+      </mesh>
+      <mesh position={[0.58, -2.85, 0.38]}>
+        <boxGeometry args={[0.38, 0.22, 0.88]} />
+        <meshStandardMaterial {...bone} />
+      </mesh>
+      <mesh position={[0.58, 0.05, 0]}>
+        <capsuleGeometry args={[0.36, 1.45, 4, 12]} />
+        <meshStandardMaterial {...muscle} />
+      </mesh>
+      <mesh position={[0.58, -1.82, 0]}>
+        <capsuleGeometry args={[0.26, 1.35, 4, 10]} />
+        <meshStandardMaterial {...muscle} />
       </mesh>
     </group>
   );
