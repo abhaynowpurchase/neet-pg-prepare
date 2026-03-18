@@ -156,6 +156,103 @@ const BODY_REGION_MAP: Record<string, {
     overviewLookAt: [0, 1.5, 0],
     regionLabel: "Cellular Level",
   },
+  // ── Biochemistry chapters — highlight metabolically active regions ──────────
+  "carbohydrate-metabolism": {
+    highlightCenter: [0, 2.2, 0],
+    highlightSize: [2.0, 2.5, 1.0],
+    markerPositions: [
+      { pos: [0, 3.0, 0.4], label: "Glucose Entry" },
+      { pos: [0, 2.5, 0.4], label: "Glycolysis (PFK-1)" },
+      { pos: [0, 1.8, 0.4], label: "TCA / Mitochondria" },
+      { pos: [0.6, 2.8, 0.3], label: "Liver Glycogen" },
+    ],
+    overviewLookAt: [0, 2.2, 0],
+    regionLabel: "Carbohydrate Metabolism",
+  },
+  "lipid-metabolism": {
+    highlightCenter: [0, 2.5, 0],
+    highlightSize: [2.2, 3.0, 1.0],
+    markerPositions: [
+      { pos: [0, 3.8, 0.4], label: "Lipid Bilayer" },
+      { pos: [-0.5, 2.8, 0.4], label: "β-Oxidation" },
+      { pos: [0.5, 2.8, 0.4], label: "Cholesterol / HMG-CoA" },
+      { pos: [0, 2.0, 0.4], label: "Ketone Bodies" },
+    ],
+    overviewLookAt: [0, 2.5, 0],
+    regionLabel: "Lipid Metabolism",
+  },
+  "protein-amino-acid-metabolism": {
+    highlightCenter: [0, 2.0, 0],
+    highlightSize: [2.0, 3.0, 1.0],
+    markerPositions: [
+      { pos: [0, 3.2, 0.4], label: "Protein Synthesis" },
+      { pos: [-0.5, 2.2, 0.4], label: "Urea Cycle" },
+      { pos: [0.5, 2.2, 0.4], label: "Transamination" },
+      { pos: [0, 1.2, 0.4], label: "AA Disorders" },
+    ],
+    overviewLookAt: [0, 2.0, 0],
+    regionLabel: "Protein Metabolism",
+  },
+  "enzymology": {
+    highlightCenter: [0, 1.5, 0],
+    highlightSize: [4.0, 13.0, 1.8],
+    markerPositions: [
+      { pos: [0, 4.5, 0.5], label: "Enzyme (Active Site)" },
+      { pos: [0, 2.5, 0.5], label: "Kinetics (Km/Vmax)" },
+      { pos: [-0.5, 1.0, 0.5], label: "Inhibition" },
+      { pos: [0.5, 1.0, 0.5], label: "Coenzymes" },
+    ],
+    overviewLookAt: [0, 2.0, 0],
+    regionLabel: "Enzymology",
+  },
+  "vitamins-minerals": {
+    highlightCenter: [0, 1.5, 0],
+    highlightSize: [4.0, 13.0, 1.8],
+    markerPositions: [
+      { pos: [0, 5.0, 0.5], label: "Fat-Soluble (A,D,E,K)" },
+      { pos: [0, 3.0, 0.5], label: "B Vitamins" },
+      { pos: [0, 1.5, 0.5], label: "Vitamin C" },
+      { pos: [0, 0.0, 0.5], label: "Minerals (Ca, Fe)" },
+    ],
+    overviewLookAt: [0, 2.0, 0],
+    regionLabel: "Vitamins & Minerals",
+  },
+  "nucleic-acids-molecular-biology": {
+    highlightCenter: [0, 5.0, 0],
+    highlightSize: [1.8, 2.2, 1.4],
+    markerPositions: [
+      { pos: [0, 5.6, 0.3], label: "DNA Replication" },
+      { pos: [0.5, 5.0, 0.4], label: "Transcription" },
+      { pos: [0, 4.5, 0.4], label: "Translation" },
+      { pos: [-0.5, 5.0, 0.4], label: "Mutations / PCR" },
+    ],
+    overviewLookAt: [0, 5.0, 0],
+    regionLabel: "Molecular Biology",
+  },
+  "hormones-cell-signaling": {
+    highlightCenter: [0, 2.2, 0],
+    highlightSize: [2.5, 3.0, 1.2],
+    markerPositions: [
+      { pos: [0, 3.5, 0.4], label: "GPCR / RTK" },
+      { pos: [-0.5, 2.5, 0.4], label: "cAMP / Insulin" },
+      { pos: [0.5, 2.5, 0.4], label: "Steroid Hormones" },
+      { pos: [0, 1.5, 0.4], label: "Ca²⁺ / IP3" },
+    ],
+    overviewLookAt: [0, 2.5, 0],
+    regionLabel: "Cell Signaling",
+  },
+  "clinical-biochemistry": {
+    highlightCenter: [0, 1.5, 0],
+    highlightSize: [4.0, 13.0, 1.8],
+    markerPositions: [
+      { pos: [0, 4.5, 0.5], label: "Cardiac Markers" },
+      { pos: [0.5, 3.0, 0.5], label: "Liver Enzymes" },
+      { pos: [-0.5, 1.5, 0.5], label: "Acid-Base" },
+      { pos: [0, 0.0, 0.5], label: "Tumor Markers" },
+    ],
+    overviewLookAt: [0, 2.0, 0],
+    regionLabel: "Clinical Biochemistry",
+  },
 };
 
 function getRegion(chapterKey: string) {
